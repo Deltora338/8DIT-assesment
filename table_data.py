@@ -1,33 +1,5 @@
 import json
 
-
-'''class Team():
-    def __init__(self, name: str, players: list[str], venue: str, colour1: str = '', colour2: str = '', isBye: bool = False,
-                 points: int = 0, matches_played: int = 0, wins: int = 0, draws: int = 0, losses: int = 0,
-                 goal_difference: int = 0, goals_for: int = 0, goals_against: int = 0) -> None:
-
-        self.isBye = isBye  # false by default
-        self.name = name
-        self.players = players
-        self.venue = venue
-        self.main_colour = colour1
-        self.secondary = colour2
-
-        # table data
-        self.points = points
-        self.matches_played = matches_played
-        self.wins = wins
-        self.draws = draws
-        self.losses = losses
-        self.goal_difference = goal_difference
-        self.goals_for = goals_for
-        self.goals_against = goals_against'''
-
-
-data: dict[str, dict[str, Team]] = {
-    "2024/2025": {}
-}
-
 stadiums = {
     "Arsenal": "Emirates Stadium",
     "Aston Villa": "Villa Park",
@@ -98,10 +70,7 @@ table: list[tuple[str, int, int, int, int, int, int, int]] = [
     ("Southampton", 12, 2, 6, 30, -60, 26, 86)
 ]
 
-'''for i, team in enumerate(table):
-    data["2024/2025"][table[i][0]] = Team(table[i][0], players[table[i][0]], stadiums[table[i][0]], points=table[i][1], matches_played=(table[i][2] + table[i][3] + table[i][4]), wins=table[i][2], draws=table[i][3], losses=table[i][4], goal_difference=table[i][5], goals_for=table[i][6], goals_against=table[i][7])
-'''
-data2 = {
+data2: dict[str, dict[str, dict[str, int | str | list[str]]]] = {
     "2024/2025": {
 
     }
