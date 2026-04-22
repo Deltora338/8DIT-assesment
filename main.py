@@ -26,18 +26,24 @@ class Season():
         self.teams = teams
         self.nteams = len(teams)
 
-    def generate_schedule(self, teams_list: list[str]) -> list[list[tuple[str, str]]]:
+    def generate_schedule(self, teams_list: list[str], format: int = 1) -> list[list[tuple[str, str]]]:
         '''
-        this method returns a schedule of all the matches to be played
+        this method returns a schedule of all the matches to be played from a list of teams and
+        a format (number of times each team plays each other)
+        returns a list of rounds, where each round is a list of matches, and each match is a tuple of the two teams playing
         '''
         schedule: list[list[tuple[str, str]]] = []
         round: list[tuple[str, str]] = []
-        for _ in range(len(teams_list) - 1):
-            for j in range(len(teams_list) // 2):
-                round.append((teams_list[j], teams_list[len(teams_list) - 1 - j]))
-            schedule.append(round)
-            round = []
-            teams_list.insert(1, teams_list.pop())
+        for i in range(format):  # allows for single/double/triple round robin formats
+            for _ in range(len(teams_list) - 1):
+                for j in range(len(teams_list) // 2):
+                    round.append((teams_list[j], teams_list[len(teams_list) - 1 - j]))
+                schedule.append(round)
+                round = []
+                teams_list.insert(1, teams_list.pop())
+            if i % 2 == 0:  # alternates home and away teams for each round robin
+                teams_list.reverse()
+
         return schedule
 
 
