@@ -1,14 +1,5 @@
 import tkinter as tk
-
-
-class Team():
-    def __init__(self, name: str, players: list[str], venue: str, colour1: str, colour2: str, isBye: bool = False) -> None:
-        self.name = name
-        self.players = players
-        self.venue = venue
-        self.main_colour = colour1
-        self.secondary = colour2
-        self.isBye = isBye  # false by default
+import json
 
 
 class Season():
@@ -16,17 +7,17 @@ class Season():
     stores information about a season, its name (usually something like 2023/2024) whether or
     not it is active (can have results added to it), and its teams
     '''
-    def __init__(self, name: str, isActive: bool, teams: list[Team]):
+    def __init__(self, name: str, teams: list[str], isActive: bool = False):
         self.name = name
         self.isActive = isActive
         if (self.nteams % 2 != 0):  # adds a bye option as a team if there is an odd number of teams
-            self.teams = teams + [Team(name="bye", players=[], venue="", colour1="", colour2="", isBye=True)]
+            self.teams = teams
+            self.teams = self.teams.append("bye")
         else:
             self.teams = teams
-        self.teams = teams
         self.nteams = len(teams)
 
-    def generate_schedule(self, teams_list: list[str], format: int = 1) -> list[list[tuple[str, str]]]:
+    def generate_schedule(self, teams_list: list[str], format: int = 2) -> list[list[tuple[str, str]]]:  # default is double header round robin
         '''
         this method returns a schedule of all the matches to be played from a list of teams and
         a format (number of times each team plays each other)
@@ -45,6 +36,20 @@ class Season():
                 teams_list.reverse()
 
         return schedule
+
+    def table(self, season: str) -> list[tuple[str, int, int, int, int, int, int, int]]:
+        with open("season.json", 'r') as file:
+            all_data = json.load(file)
+            try:
+                assert all_data[season]
+                data = all_data[season]
+            except Exception as e:
+                print(f"Error loading season data {season}\nExeption: {e}")
+
+            table_rows = []
+            for i in range(len(data))
+
+            file.close()
 
 
 class GUI():
