@@ -39,15 +39,17 @@ class Season():
 
     def table(self, season: str) -> list[tuple[str, int, int, int, int, int, int, int]]:
         with open("season.json", 'r') as file:
-            all_data = json.load(file)
+            all_data: dict[str, dict[str, dict[str, int | str | list[str]]]] = json.load(file)
             try:
                 assert all_data[season]
-                data = all_data[season]
+                data: dict[str, dict[str, int | str | list[str]]] = all_data[season]
             except Exception as e:
                 print(f"Error loading season data {season}\nExeption: {e}")
+                return [("Error loading data", 0, 0, 0, 0, 0, 0, 0)]
 
-            table_rows = []
-            for i in range(len(data))
+            table_rows: list[dict[str, int | str | list[str]]] = []
+            for i in range(len(data)):
+                
 
             file.close()
 
