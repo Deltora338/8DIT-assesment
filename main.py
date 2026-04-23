@@ -39,14 +39,18 @@ class Season():
         return schedule
 
 #                                            name,points,mp,   w,   d,   l,   gd,  gf,  ga
-    def table(self, season: str) -> list[tuple[str, int, int, int, int, int, int, int, int]] | None:
-        with open("data.json", 'r') as file:
+    def table(self) -> list[tuple[str, int, int, int, int, int, int, int, int]] | None:
+        '''
+        gets data for a season if associated data exists and returns it in
+        a usable form for displaying data
+        '''
+        with open("data.json", 'r') as file:  # json file
             all_data: dict[str, dict[str, dict[str, int | str | list[str]]]] = json.load(file)
             try:
-                assert all_data[season]
-                data: dict[str, dict[str, int | str | list[str]]] = all_data[season]
+                assert all_data[self.name]
+                data: dict[str, dict[str, int | str | list[str]]] = all_data[self.name]
             except Exception as e:
-                print(f"Error loading season data {season}\nExeption: {e}")
+                print(f"Error loading season data {self.name}\nExeption: {e}")
                 file.close()
                 print("Error loading data")
                 return
@@ -89,18 +93,33 @@ class GUI():
         self.button_custom_season_create = tk.Button(self.frame_season, text="Custom", command=lambda: self.display_season("Custom"))
         self.button_custom_season_create.grid(row=0, column=2)
 
+        self.selected_season: Season
+
+        with open("data.json", 'r') as file:
+            data = json.load(file)
+            teams: list[str] = []
+            for team in data["2024/2025"]:
+                teams.append(data["2024/2025"][team]["team name"])
+            self.selected_season = Season("2024/2025", teams)
+            file.close()
+
     def display_season(self, season: str):
-        self.button_table = tk.Button(self.frame_options, text="Table", command=lambda: self.display_table(season))
-        self.button_matches = tk.Button(self.frame_options, text="Matches", command=lambda: self.display_matches(season))
-        self.button_add_game = tk.Button(self.frame_options, text="Enter result", command=lambda: self.add_game(season))
+        self.button_table = tk.Button(self.frame_options, text="Table", command=lambda: self.display_table(self.selected_season))
+        self.button_table.grid(row=1, column=0)
+        self.button_matches = tk.Button(self.frame_options, text="Matches", command=self.display_matches)
+        self.button_matches.grid(row=1, column=1)
 
-    def display_table(self, season: str):
+        if (self.selected_season.isActive):
+            self.button_add_game = tk.Button(self.frame_options, text="Enter result", command=self.add_game)
+            self.button_add_game.grid(row=1, column=2)
+
+    def display_table(self, season_: Season):
+        season_.table()
+
+    def display_matches(self):
         pass
 
-    def display_matches(self, season: str):
-        pass
-
-    def add_game(self, season: str):
+    def add_game(self):
         pass
 
 
@@ -108,6 +127,3 @@ if (__name__ == "__main__"):
     root: tk.Tk = tk.Tk()
     window: GUI = GUI(root)
     root.mainloop()
-
-    seas = Season("2024/2025", ["test"])
-    seas.table("seas.name")
