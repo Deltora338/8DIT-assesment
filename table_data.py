@@ -70,7 +70,7 @@ table: list[tuple[str, int, int, int, int, int, int, int]] = [
     ("Southampton", 12, 2, 6, 30, -60, 26, 86)
 ]
 
-data2: dict[str, dict[str, dict[str, int | str | list[str]]]] = {
+data2: dict[str, dict[int, dict[str, int | str | list[str]]]] = {
     "2024/2025": {
 
     }
@@ -91,9 +91,8 @@ for i, team in enumerate(table):
     data2["2024/2025"][i]["ga"] = table[i][7]
 
 
-
 if __name__ == "__main__":
-    
+
     with open('data.json', 'w') as file:
         json_str = json.dumps(data2, indent=4)
         file.write(json_str)

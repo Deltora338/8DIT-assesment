@@ -38,8 +38,8 @@ class Season():
 
         return schedule
 
-                                        #   name, points,mp,   w,   d,   l,   gd,  gf,  ga
-    def table(self, season: str) -> list[tuple[str, int, int, int, int, int, int, int, int]]:
+#                                            name,points,mp,   w,   d,   l,   gd,  gf,  ga
+    def table(self, season: str) -> list[tuple[str, int, int, int, int, int, int, int, int]] | None:
         with open("data.json", 'r') as file:
             all_data: dict[str, dict[str, dict[str, int | str | list[str]]]] = json.load(file)
             try:
@@ -51,10 +51,10 @@ class Season():
                 print("Error loading data")
                 return
 
-            table_rows: list[tuple[int | str | list[str]]] = []
+            table_rows: object = []  # is also annoying to type
 
             for i in range(len(data)):
-                row: tuple[int | str | list[str]] = (
+                row: object = (  # is annoying to type
                     data[str(i)]["team name"],
                     data[str(i)]["points"],
                     data[str(i)]["matches played"],
@@ -65,11 +65,10 @@ class Season():
                     data[str(i)]["gf"],
                     data[str(i)]["ga"])
                 table_rows.append(row)
-            
+
             print(table_rows)
             file.close()
             return table_rows
-
 
 
 class GUI():
