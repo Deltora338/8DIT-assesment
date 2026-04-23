@@ -10,12 +10,12 @@ class Season():
     def __init__(self, name: str, teams: list[str], isActive: bool = False):
         self.name = name
         self.isActive = isActive
+        self.nteams = len(teams)
         if (self.nteams % 2 != 0):  # adds a bye option as a team if there is an odd number of teams
             self.teams = teams
             self.teams = self.teams.append("bye")
         else:
             self.teams = teams
-        self.nteams = len(teams)
 
     def generate_schedule(self, teams_list: list[str], format: int = 2) -> list[list[tuple[str, str]]]:  # default is double header round robin
         '''
@@ -23,35 +23,53 @@ class Season():
         a format (number of times each team plays each other)
         returns a list of rounds, where each round is a list of matches, and each match is a tuple of the two teams playing
         '''
+        use_team_list: list[str] = teams_list
         schedule: list[list[tuple[str, str]]] = []
         round: list[tuple[str, str]] = []
         for i in range(format):  # allows for single/double/triple round robin formats
-            for _ in range(len(teams_list) - 1):
-                for j in range(len(teams_list) // 2):
-                    round.append((teams_list[j], teams_list[len(teams_list) - 1 - j]))
+            for _ in range(len(use_team_list) - 1):
+                for j in range(len(use_team_list) // 2):
+                    round.append((use_team_list[j], use_team_list[len(use_team_list) - 1 - j]))
                 schedule.append(round)
                 round = []
-                teams_list.insert(1, teams_list.pop())
+                use_team_list.insert(1, use_team_list.pop())
             if i % 2 == 0:  # alternates home and away teams for each round robin
-                teams_list.reverse()
+                use_team_list.reverse()
 
         return schedule
 
-    def table(self, season: str) -> list[tuple[str, int, int, int, int, int, int, int]]:
-        with open("season.json", 'r') as file:
+                                        #   name, points,mp,   w,   d,   l,   gd,  gf,  ga
+    def table(self, season: str) -> list[tuple[str, int, int, int, int, int, int, int, int]]:
+        with open("data.json", 'r') as file:
             all_data: dict[str, dict[str, dict[str, int | str | list[str]]]] = json.load(file)
             try:
                 assert all_data[season]
                 data: dict[str, dict[str, int | str | list[str]]] = all_data[season]
             except Exception as e:
                 print(f"Error loading season data {season}\nExeption: {e}")
-                return [("Error loading data", 0, 0, 0, 0, 0, 0, 0)]
+                file.close()
+                print("Error loading data")
+                return
 
-            table_rows: list[dict[str, int | str | list[str]]] = []
+            table_rows: list[tuple[int | str | list[str]]] = []
+
             for i in range(len(data)):
-                
-
+                row: tuple[int | str | list[str]] = (
+                    data[str(i)]["team name"],
+                    data[str(i)]["points"],
+                    data[str(i)]["matches played"],
+                    data[str(i)]["wins"],
+                    data[str(i)]["draws"],
+                    data[str(i)]["losses"],
+                    data[str(i)]["gd"],
+                    data[str(i)]["gf"],
+                    data[str(i)]["ga"])
+                table_rows.append(row)
+            
+            print(table_rows)
             file.close()
+            return table_rows
+
 
 
 class GUI():
@@ -91,3 +109,6 @@ if (__name__ == "__main__"):
     root: tk.Tk = tk.Tk()
     window: GUI = GUI(root)
     root.mainloop()
+
+    seas = Season("2024/2025", ["test"])
+    seas.table("seas.name")

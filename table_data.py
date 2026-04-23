@@ -77,20 +77,24 @@ data2: dict[str, dict[str, dict[str, int | str | list[str]]]] = {
 }
 
 for i, team in enumerate(table):
-    data2["2024/2025"][table[i][0]] = {}
-    data2["2024/2025"][table[i][0]]["players"] = players[table[i][0]]
-    data2["2024/2025"][table[i][0]]["venue"] = stadiums[table[i][0]]
-    data2["2024/2025"][table[i][0]]["points"] = table[i][1]
-    data2["2024/2025"][table[i][0]]["matches played"] = table[i][2] + table[i][3] + table[i][4]
-    data2["2024/2025"][table[i][0]]["wins"] = table[i][2]
-    data2["2024/2025"][table[i][0]]["draws"] = table[i][3]
-    data2["2024/2025"][table[i][0]]["losses"] = table[i][4]
-    data2["2024/2025"][table[i][0]]["gd"] = table[i][5]
-    data2["2024/2025"][table[i][0]]["gf"] = table[i][6]
-    data2["2024/2025"][table[i][0]]["ga"] = table[i][7]
+    data2["2024/2025"][i] = {}
+    data2["2024/2025"][i]["team name"] = table[i][0]
+    data2["2024/2025"][i]["players"] = players[table[i][0]]
+    data2["2024/2025"][i]["venue"] = stadiums[table[i][0]]
+    data2["2024/2025"][i]["points"] = table[i][1]
+    data2["2024/2025"][i]["matches played"] = table[i][2] + table[i][3] + table[i][4]
+    data2["2024/2025"][i]["wins"] = table[i][2]
+    data2["2024/2025"][i]["draws"] = table[i][3]
+    data2["2024/2025"][i]["losses"] = table[i][4]
+    data2["2024/2025"][i]["gd"] = table[i][5]
+    data2["2024/2025"][i]["gf"] = table[i][6]
+    data2["2024/2025"][i]["ga"] = table[i][7]
 
 
-with open('data.json', 'w') as file:
-    json_str = json.dumps(data2, indent=4)
-    file.write(json_str)
-    file.close()
+
+if __name__ == "__main__":
+    
+    with open('data.json', 'w') as file:
+        json_str = json.dumps(data2, indent=4)
+        file.write(json_str)
+        file.close()

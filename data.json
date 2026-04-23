@@ -1,6 +1,7 @@
 {
     "2024/2025": {
-        "Liverpool": {
+        "0": {
+            "team name": "Liverpool",
             "players": [
                 "Alisson Becker",
                 "Virgil van Dijk",
@@ -13,7 +14,7 @@
                 "Mohamed Salah",
                 "Luis D\u00edaz",
                 "Darwin N\u00fa\u00f1ez",
-                "RIP Diogo Jota"
+                "Diogo Jota"
             ],
             "venue": "Anfield",
             "points": 84,
@@ -25,7 +26,8 @@
             "gf": 86,
             "ga": 41
         },
-        "Arsenal": {
+        "1": {
+            "team name": "Arsenal",
             "players": [
                 "David Raya",
                 "William Saliba",
@@ -51,7 +53,8 @@
             "gf": 69,
             "ga": 34
         },
-        "Manchester City": {
+        "2": {
+            "team name": "Manchester City",
             "players": [
                 "Ederson",
                 "R\u00faben Dias",
@@ -76,7 +79,8 @@
             "gf": 72,
             "ga": 44
         },
-        "Chelsea": {
+        "3": {
+            "team name": "Chelsea",
             "players": [
                 "Robert S\u00e1nchez",
                 "Levi Colwill",
@@ -101,7 +105,8 @@
             "gf": 64,
             "ga": 43
         },
-        "Newcastle United": {
+        "4": {
+            "team name": "Newcastle United",
             "players": [
                 "Nick Pope",
                 "Fabian Sch\u00e4r",
@@ -125,7 +130,8 @@
             "gf": 68,
             "ga": 47
         },
-        "Aston Villa": {
+        "5": {
+            "team name": "Aston Villa",
             "players": [
                 "Emiliano Mart\u00ednez",
                 "Ezri Konsa",
@@ -151,7 +157,8 @@
             "gf": 58,
             "ga": 51
         },
-        "Nottingham Forest": {
+        "6": {
+            "team name": "Nottingham Forest",
             "players": [
                 "Matz Sels",
                 "Murillo",
@@ -175,7 +182,8 @@
             "gf": 58,
             "ga": 46
         },
-        "Brighton & Hove Albion": {
+        "7": {
+            "team name": "Brighton & Hove Albion",
             "players": [
                 "Bart Verbruggen",
                 "Lewis Dunk",
@@ -199,7 +207,8 @@
             "gf": 66,
             "ga": 59
         },
-        "Bournemouth": {
+        "8": {
+            "team name": "Bournemouth",
             "players": [
                 "Kepa Arrizabalaga",
                 "Illia Zabarnyi",
@@ -223,7 +232,8 @@
             "gf": 58,
             "ga": 46
         },
-        "Brentford": {
+        "9": {
+            "team name": "Brentford",
             "players": [
                 "Mark Flekken",
                 "Nathan Collins",
@@ -247,7 +257,8 @@
             "gf": 66,
             "ga": 57
         },
-        "Fulham": {
+        "10": {
+            "team name": "Fulham",
             "players": [
                 "Bernd Leno",
                 "Joachim Andersen",
@@ -271,7 +282,8 @@
             "gf": 54,
             "ga": 54
         },
-        "Crystal Palace": {
+        "11": {
+            "team name": "Crystal Palace",
             "players": [
                 "Dean Henderson",
                 "Marc Gu\u00e9hi",
@@ -295,7 +307,8 @@
             "gf": 51,
             "ga": 51
         },
-        "Everton": {
+        "12": {
+            "team name": "Everton",
             "players": [
                 "Jordan Pickford",
                 "James Tarkowski",
@@ -319,7 +332,8 @@
             "gf": 42,
             "ga": 44
         },
-        "West Ham United": {
+        "13": {
+            "team name": "West Ham United",
             "players": [
                 "Alphonse Areola",
                 "Max Kilman",
@@ -343,7 +357,8 @@
             "gf": 46,
             "ga": 62
         },
-        "Manchester United": {
+        "14": {
+            "team name": "Manchester United",
             "players": [
                 "Andr\u00e9 Onana",
                 "Lisandro Mart\u00ednez",
@@ -367,7 +382,8 @@
             "gf": 44,
             "ga": 54
         },
-        "Wolverhampton Wanderers": {
+        "15": {
+            "team name": "Wolverhampton Wanderers",
             "players": [
                 "Jos\u00e9 S\u00e1",
                 "Toti Gomes",
@@ -391,7 +407,8 @@
             "gf": 54,
             "ga": 69
         },
-        "Tottenham Hotspur": {
+        "16": {
+            "team name": "Tottenham Hotspur",
             "players": [
                 "Guglielmo Vicario",
                 "Cristian Romero",
@@ -415,7 +432,8 @@
             "gf": 64,
             "ga": 65
         },
-        "Leicester City": {
+        "17": {
+            "team name": "Leicester City",
             "players": [
                 "Mads Hermansen",
                 "Wout Faes",
@@ -439,7 +457,8 @@
             "gf": 33,
             "ga": 80
         },
-        "Ipswich Town": {
+        "18": {
+            "team name": "Ipswich Town",
             "players": [
                 "Arijanet Muric",
                 "Jacob Greaves",
@@ -463,7 +482,8 @@
             "gf": 36,
             "ga": 82
         },
-        "Southampton": {
+        "19": {
+            "team name": "Southampton",
             "players": [
                 "Aaron Ramsdale",
                 "Jan Bednarek",
