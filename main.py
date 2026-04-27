@@ -123,6 +123,11 @@ class GUI():
             self.button_add_game.grid(row=1, column=2)
 
     def display_table(self, season_: Season):
+        self.frame_table = tk.Frame(self.frame_display)
+        self.frame_table.grid(row=0, column=1)
+        self.frame_table_icons = tk.Frame(self.frame_display)
+        self.frame_table_icons.grid(row=0, column=0)
+
         table = season_.table()
         try:
             assert table
@@ -138,7 +143,7 @@ class GUI():
 
         header_text = ("  Team                             Pts    MP    W    D     L    GD    GF   GA")
 
-        header_label = tk.Label(self.frame_display,
+        header_label = tk.Label(self.frame_table,
                                 text=header_text,
                                 justify=tk.LEFT,
                                 font=("Courier New", 8),
@@ -155,7 +160,7 @@ class GUI():
                 f'{row[5]:>4} {row[6]:>4} {row[7]:>4} {row[8]:>4}'
             )
             label = tk.Label(
-                self.frame_display,
+                self.frame_table,
                 text=row_text,
                 justify=tk.LEFT,
                 font=("Courier New", 10),
@@ -169,6 +174,16 @@ class GUI():
                 object.grid(row=i + 1, column=0, pady=5)
             else:
                 object.grid(row=i + 1, column=0, padx=5)
+
+        icon_labels: list[tk.Label] = []
+
+        for i, row in enumerate(table):
+            icon_image = tk.PhotoImage(file='Liverpool.gif')
+            image_label = tk.Label(self.frame_table_icons, image=icon_image)
+            icon_labels.append(image_label)
+
+        for i, label in enumerate(icon_labels):
+            label.grid(row=i + 1, column=0)
 
     def display_matches(self):
         pass
