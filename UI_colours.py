@@ -1,0 +1,9 @@
+'''
+file with colours for
+'''
+
+BLACK = "#08090A"
+LIGHTGRAY = "#A7A2A9"
+WHITE = "#F4F7F5"
+DARKGRAY = "#575A5E"
+DARKDARKGRAY = "#222823"

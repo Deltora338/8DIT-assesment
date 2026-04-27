@@ -1,5 +1,6 @@
 import tkinter as tk
 import json
+import UI_colours as UI_colours
 
 
 class Season():
@@ -78,7 +79,7 @@ class GUI():
     def __init__(self, parent: tk.Tk):
         self.parent = parent
 
-        self.colours = []
+        self.colours = ["E8F7EE"]
 
         self.frame_buttons = tk.Frame(parent)  # frame for choosing season
         self.frame_buttons.grid(row=0)
