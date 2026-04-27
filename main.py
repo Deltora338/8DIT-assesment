@@ -78,6 +78,8 @@ class GUI():
     def __init__(self, parent: tk.Tk):
         self.parent = parent
 
+        self.colours = []
+
         self.frame_buttons = tk.Frame(parent)  # frame for choosing season
         self.frame_buttons.grid(row=0)
         self.frame_display = tk.Frame(parent)  # frame for table
