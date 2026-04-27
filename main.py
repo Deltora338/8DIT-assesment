@@ -83,6 +83,17 @@ class GUI():
         self.frame_display = tk.Frame(parent)  # frame for table
         self.frame_display.grid(row=1)
 
+        self.season_names = ["2024/2025", "2025/2026", "Custom"]
+        self.season_buttons: list[tk.Button] = []
+
+        for i, buttonName in enumerate(self.season_names):
+            if buttonName != "Custom":
+                b = tk.Button(self.frame_buttons, text=buttonName, command=lambda: self.display_season(buttonName))
+            else:
+                b = tk.Button(self.frame_buttons, text=buttonName, command=lambda: self.createCustomSeason())
+            b.grid(row=0, column=i)
+            self.season_buttons.append(b)
+
         self.button_2425_season = tk.Button(self.frame_buttons, text="2024/2025", command=lambda: self.display_season("2024/2025"))
         self.button_2425_season.grid(row=0, column=0)
         self.button_2526_season = tk.Button(self.frame_buttons, text="2025/2026", command=lambda: self.display_season("2025/2026"))
@@ -118,17 +129,32 @@ class GUI():
             print(f"Error loading season table for {season_.name}\nExeption: {e}")
             print("Error loading data")
             return
-        max_team_name_length = 0
-        for row in table:
-            if len(row[0]) > max_team_name_length:
-                max_team_name_length = len(row[0])
+
+        max_team_name_length = max(len(row[0]) for row in table)
+        team_col_width = max_team_name_length + 5
+
         labels: list[tk.Label] = []
-        labels.append(tk.Label(self.frame_display, text=f'{"Team":{max_team_name_length + 3}} {"Pts":2} {"MP":4} {"W":3} {"D":3} {"L":3} {"GD":2} {"GF":3} {"GA"}', justify=tk.LEFT, font="Courier 12 bold"))
+
+        header_text = (
+            f'{"Team":<{team_col_width}} '
+            f'{"Pts":>{max_team_name_length // 2}} {"MP":>12} {"W":>4} {"D":>4} {"L":>4} {"GD":>4} {"GF":>4} {"GA":>4}')
+
+        header_label = tk.Label(self.frame_display, text=header_text, justify=tk.LEFT, font=("Courier New", 8))
+        labels.append(header_label)
+
         for i, row in enumerate(table):
-            text = f'{i + 1}. {row[0]:10}'
-            text = f'{text:27}'
-            text += f'{row[1]:3} {row[2]:3} {row[3]:3} {row[4]:3} {row[5]:3} {row[6]:3} {row[7]:3} {row[8]:3}'
-            label = tk.Label(self.frame_display, text=text, justify=tk.LEFT, font="Courier 12")
+            team_name = f'{i + 1}. {row[0]:10}'
+            row_text = (
+                f'{team_name:<{team_col_width}} '
+                f'{row[1]:>4} {row[2]:>4} {row[3]:>4} {row[4]:>4} '
+                f'{row[5]:>4} {row[6]:>4} {row[7]:>4} {row[8]:>4}'
+            )
+            label = tk.Label(
+                self.frame_display,
+                text=row_text,
+                justify=tk.LEFT,
+                font=("Courier New", 10)
+            )
             labels.append(label)
 
         for i, object in enumerate(labels):
@@ -138,6 +164,9 @@ class GUI():
         pass
 
     def add_game(self):
+        pass
+
+    def createCustomSeason(self):
         pass
 
 
