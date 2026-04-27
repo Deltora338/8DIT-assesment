@@ -39,7 +39,7 @@ class Season():
         return schedule
 
 #                                            name,points,mp,   w,   d,   l,   gd,  gf,  ga
-    def table(self) -> list[tuple[str, int, int, int, int, int, int, int, int]] | None:
+    def table(self):
         '''
         gets data for a season if associated data exists and returns it in
         a usable form for displaying data
@@ -70,7 +70,6 @@ class Season():
                     data[str(i)]["ga"])
                 table_rows.append(row)
 
-            print(table_rows)
             file.close()
             return table_rows
 
@@ -79,18 +78,16 @@ class GUI():
     def __init__(self, parent: tk.Tk):
         self.parent = parent
 
-        self.frame_season = tk.Frame(parent)  # frame for choosing season
-        self.frame_season.grid()
-        self.frame_options = tk.Frame(self.frame_season)  # frame for options within season
-        self.frame_options.grid()
-        self.frame_table = tk.Frame(self.frame_options)  # frame for table
-        self.frame_table.grid()
+        self.frame_buttons = tk.Frame(parent)  # frame for choosing season
+        self.frame_buttons.grid(row=0)
+        self.frame_display = tk.Frame(parent)  # frame for table
+        self.frame_display.grid(row=1)
 
-        self.button_2425_season = tk.Button(self.frame_season, text="2024/2025", command=lambda: self.display_season("2024/2025"))
+        self.button_2425_season = tk.Button(self.frame_buttons, text="2024/2025", command=lambda: self.display_season("2024/2025"))
         self.button_2425_season.grid(row=0, column=0)
-        self.button_2526_season = tk.Button(self.frame_season, text="2025/2026", command=lambda: self.display_season("2025/2026"))
+        self.button_2526_season = tk.Button(self.frame_buttons, text="2025/2026", command=lambda: self.display_season("2025/2026"))
         self.button_2526_season.grid(row=0, column=1)
-        self.button_custom_season_create = tk.Button(self.frame_season, text="Custom", command=lambda: self.display_season("Custom"))
+        self.button_custom_season_create = tk.Button(self.frame_buttons, text="Custom", command=lambda: self.display_season("Custom"))
         self.button_custom_season_create.grid(row=0, column=2)
 
         self.selected_season: Season
@@ -104,17 +101,38 @@ class GUI():
             file.close()
 
     def display_season(self, season: str):
-        self.button_table = tk.Button(self.frame_options, text="Table", command=lambda: self.display_table(self.selected_season))
+        self.button_table = tk.Button(self.frame_buttons, text="Table", command=lambda: self.display_table(self.selected_season))
         self.button_table.grid(row=1, column=0)
-        self.button_matches = tk.Button(self.frame_options, text="Matches", command=self.display_matches)
+        self.button_matches = tk.Button(self.frame_buttons, text="Matches", command=self.display_matches)
         self.button_matches.grid(row=1, column=1)
 
         if (self.selected_season.isActive):
-            self.button_add_game = tk.Button(self.frame_options, text="Enter result", command=self.add_game)
+            self.button_add_game = tk.Button(self.frame_buttons, text="Enter result", command=self.add_game)
             self.button_add_game.grid(row=1, column=2)
 
     def display_table(self, season_: Season):
-        season_.table()
+        table = season_.table()
+        try:
+            assert table
+        except Exception as e:
+            print(f"Error loading season table for {season_.name}\nExeption: {e}")
+            print("Error loading data")
+            return
+        max_team_name_length = 0
+        for row in table:
+            if len(row[0]) > max_team_name_length:
+                max_team_name_length = len(row[0])
+        labels: list[tk.Label] = []
+        labels.append(tk.Label(self.frame_display, text=f'{"Team":{max_team_name_length + 3}} {"Pts":2} {"MP":4} {"W":3} {"D":3} {"L":3} {"GD":2} {"GF":3} {"GA"}', justify=tk.LEFT, font="Courier 12 bold"))
+        for i, row in enumerate(table):
+            text = f'{i + 1}. {row[0]:10}'
+            text = f'{text:27}'
+            text += f'{row[1]:3} {row[2]:3} {row[3]:3} {row[4]:3} {row[5]:3} {row[6]:3} {row[7]:3} {row[8]:3}'
+            label = tk.Label(self.frame_display, text=text, justify=tk.LEFT, font="Courier 12")
+            labels.append(label)
+
+        for i, object in enumerate(labels):
+            object.grid(row=i + 1, column=0, padx=5)
 
     def display_matches(self):
         pass
