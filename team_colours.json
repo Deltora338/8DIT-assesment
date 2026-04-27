@@ -1,0 +1,102 @@
+{
+    "Arsenal": {
+        "1st": "#EF0107",
+        "2nd": "#000000"
+    },
+    "Aston Villa": {
+        "1st": "#95BFE5",
+        "2nd": "#FFFFFF"
+    },
+    "Bournemouth": {
+        "1st": "#DA291C",
+        "2nd": "#FFFFFF"
+    },
+    "Brentford": {
+        "1st": "#E30613",
+        "2nd": "#FFB81C"
+    },
+    "Brighton & Hove Albion": {
+        "1st": "#0057B8",
+        "2nd": "#FFCD00"
+    },
+    "Burnley": {
+        "1st": "#6C1D45",
+        "2nd": "#FFD200"
+    },
+    "Chelsea": {
+        "1st": "#034694",
+        "2nd": "#FFFFFF"
+    },
+    "Crystal Palace": {
+        "1st": "#1B458F",
+        "2nd": "#FFFFFF"
+    },
+    "Everton": {
+        "1st": "#003399",
+        "2nd": "#7F7F7F"
+    },
+    "Fulham": {
+        "1st": "#FFFFFF",
+        "2nd": "#CC0000"
+    },
+    "Ipswich Town": {
+        "1st": "#005DAA",
+        "2nd": "#9D2235"
+    },
+    "Leicester City": {
+        "1st": "#003090",
+        "2nd": "#000000"
+    },
+    "Liverpool": {
+        "1st": "#C8102E",
+        "2nd": "#FFFFFF"
+    },
+    "Luton Town": {
+        "1st": "#F78F1E",
+        "2nd": "#FFFFFF"
+    },
+    "Manchester City": {
+        "1st": "#6CABDD",
+        "2nd": "#990000"
+    },
+    "Manchester United": {
+        "1st": "#DA291C",
+        "2nd": "#000000"
+    },
+    "Newcastle United": {
+        "1st": "#241F20",
+        "2nd": "#000000"
+    },
+    "Nottingham Forest": {
+        "1st": "#DD0000",
+        "2nd": "#FFFFFF"
+    },
+    "Sheffield United": {
+        "1st": "#EE2737",
+        "2nd": "#FFD200"
+    },
+    "Southampton": {
+        "1st": "#D71920",
+        "2nd": "#FFD200"
+    },
+    "Tottenham Hotspur": {
+        "1st": "#FFFFFF",
+        "2nd": "#132257"
+    },
+    "West Ham United": {
+        "1st": "#7A263A",
+        "2nd": "#FFFFFF"
+    },
+    "Wolverhampton Wanderers": {
+        "1st": "#FDB913",
+        "2nd": "#000000"
+    },
+    "Leeds United": {
+        "1st": "#FFFFFF",
+        "2nd": "#0000ff"
+    },
+    "Sunderland A.F.C.": {
+        "1st": "#FFFFFF",
+        "2nd": "#ff0000"
+    }
+}
