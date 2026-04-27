@@ -79,11 +79,9 @@ class GUI():
     def __init__(self, parent: tk.Tk):
         self.parent = parent
 
-        self.colours = ["E8F7EE"]
-
-        self.frame_buttons = tk.Frame(parent)  # frame for choosing season
+        self.frame_buttons = tk.Frame(parent, bg=UI_colours.WHITE)  # frame for choosing season
         self.frame_buttons.grid(row=0)
-        self.frame_display = tk.Frame(parent)  # frame for table
+        self.frame_display = tk.Frame(parent, bg=UI_colours.WHITE)  # frame for table
         self.frame_display.grid(row=1)
 
         self.season_names = ["2024/2025", "2025/2026", "Custom"]
@@ -138,11 +136,15 @@ class GUI():
 
         labels: list[tk.Label] = []
 
-        header_text = (
-            f'{"Team":<{team_col_width}} '
-            f'{"Pts":>{max_team_name_length // 2}} {"MP":>12} {"W":>4} {"D":>4} {"L":>4} {"GD":>4} {"GF":>4} {"GA":>4}')
+        header_text = ("  Team                             Pts    MP    W    D     L    GD    GF   GA")
 
-        header_label = tk.Label(self.frame_display, text=header_text, justify=tk.LEFT, font=("Courier New", 8))
+        header_label = tk.Label(self.frame_display,
+                                text=header_text,
+                                justify=tk.LEFT,
+                                font=("Courier New", 8),
+                                bg=UI_colours.DARKGRAY,
+                                fg=UI_colours.WHITE,)
+
         labels.append(header_label)
 
         for i, row in enumerate(table):
@@ -156,12 +158,17 @@ class GUI():
                 self.frame_display,
                 text=row_text,
                 justify=tk.LEFT,
-                font=("Courier New", 10)
+                font=("Courier New", 10),
+                bg=UI_colours.WHITE,
+                fg=UI_colours.BLACK
             )
             labels.append(label)
 
         for i, object in enumerate(labels):
-            object.grid(row=i + 1, column=0, padx=5)
+            if i == 0:
+                object.grid(row=i + 1, column=0, pady=5)
+            else:
+                object.grid(row=i + 1, column=0, padx=5)
 
     def display_matches(self):
         pass
@@ -175,5 +182,6 @@ class GUI():
 
 if (__name__ == "__main__"):
     root: tk.Tk = tk.Tk()
+    root.configure(bg=UI_colours.WHITE)
     window: GUI = GUI(root)
     root.mainloop()
