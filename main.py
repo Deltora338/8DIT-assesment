@@ -123,7 +123,7 @@ class GUI():
             self.button_add_game.grid(row=1, column=2)
 
     def display_table(self, season_: Season):
-        self.frame_table = tk.Frame(self.frame_display)
+        self.frame_table = tk.Frame(self.frame_display, bg=UI_colours.WHITE)
         self.frame_table.grid(row=0, column=1)
         self.frame_table_icons = tk.Frame(self.frame_display)
         self.frame_table_icons.grid(row=0, column=0)
@@ -175,15 +175,15 @@ class GUI():
             else:
                 object.grid(row=i + 1, column=0, padx=5)
 
-        icon_labels: list[tk.Label] = []
+        '''icon_labels: list[tk.Label] = []
 
         for i, row in enumerate(table):
-            icon_image = tk.PhotoImage(file='Liverpool.gif')
+            icon_image = tk.PhotoImage(file='Team Icon/row[0]')
             image_label = tk.Label(self.frame_table_icons, image=icon_image)
             icon_labels.append(image_label)
 
         for i, label in enumerate(icon_labels):
-            label.grid(row=i + 1, column=0)
+            label.grid(row=i + 1, column=0)'''
 
     def display_matches(self):
         pass
