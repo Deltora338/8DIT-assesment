@@ -98,7 +98,7 @@ class GUI():
                     teams: list[str] = []
                     for team in data["2024/2025"]:
                         teams.append(data["2024/2025"][team]["team name"])
-                    self.selected_season = Season("2024/2025", teams, isActive=True)
+                    self.selected_season = Season("2024/2025", teams)
                     self.display_table(self.selected_season)
 
                     self.season_names = [key for key in data]
@@ -106,11 +106,15 @@ class GUI():
 
                     for i, buttonName in enumerate(self.season_names):
                         if buttonName != "Custom":
-                            b = tk.Button(self.frame_buttons, text=buttonName, command=lambda: self.display_season(buttonName))
+                            if i == 0:
+                                b = tk.Button(self.frame_buttons, text=buttonName, command=lambda: self.display_season(buttonName), bg=UI_colours.LIGHTBLUE, fg=UI_colours.BLACK)
+                            else:
+                                b = tk.Button(self.frame_buttons, text=buttonName, command=lambda: self.display_season(buttonName))
                         else:
                             b = tk.Button(self.frame_buttons, text=buttonName, command=lambda: self.createCustomSeason())
                         b.grid(row=0, column=i, padx=5, pady=5)
                         self.season_buttons.append(b)
+                        self.primary_widgets.append(b)
                     file.close()
                 except Exception as e:
                     file.close()
@@ -118,6 +122,23 @@ class GUI():
         except Exception as e:
             print(f"Error in initial open() from {self.data_file_name}\nExeption: {e}")
             print(f"Make sure you have the file '{self.data_file_name}' in the correct directory")  # most common error
+        
+        for i in range(3):
+            if i == 0:
+                button = tk.Button(self.frame_buttons, text="Table", command=lambda: self.display_table(self.selected_season), bg=UI_colours.OTHERBLUE)
+                button.grid(row=1, column=i, padx=5, pady=5)
+                self.primary_widgets.append(button)
+
+            elif i == 1:
+                button = tk.Button(self.frame_buttons, text="Matches", command=self.display_matches)
+                button.grid(row=1, column=i, padx=5, pady=5)
+                self.primary_widgets.append(button)
+            else:
+                if self.selected_season.isActive:
+                    button = tk.Button(self.frame_buttons, text="Add result", command=self.add_game)
+                    button.grid(row=1, column=i, padx=5, pady=5)
+                    self.primary_widgets.append(button)
+            
 
     def reset(self):
         '''
@@ -185,10 +206,7 @@ class GUI():
                     self.reset()
 
     def display_season(self, season: str):
-        self.button_table = tk.Button(self.frame_buttons, text="Table", command=lambda: self.display_table(self.selected_season))
-        self.button_table.grid(row=1, column=0, padx=5, pady=5)
-        self.button_matches = tk.Button(self.frame_buttons, text="Matches", command=self.display_matches)
-        self.button_matches.grid(row=1, column=1, padx=5, pady=5)
+        #  self.season_buttons[0].configure(bg="#bfe1f5")
 
         if (self.selected_season.isActive):
             self.button_add_game = tk.Button(self.frame_buttons, text="Enter result", command=self.add_game)
@@ -213,7 +231,7 @@ class GUI():
 
         labels: list[tk.Label] = []
 
-        table_title_text = f"{season_.name} Table {"(Ongoing)" if (season_.isActive) else "(Complete)"}"
+        table_title_text = f"{season_.name} Table {"(Season Ongoing)" if (season_.isActive) else "(Season Complete)"}"
 
         table_title = tk.Label(self.frame_table, text=table_title_text, font=("Courier New", 12, "bold"))
         labels.append(table_title)
@@ -278,4 +296,5 @@ if (__name__ == "__main__"):
     root.configure(bg=UI_colours.WHITE)
     window: GUI = GUI(root)
     # window.reset()
+    root.title("Premier League Application")
     root.mainloop()
