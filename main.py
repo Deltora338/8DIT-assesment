@@ -78,6 +78,7 @@ class Season():
 class GUI():
     def __init__(self, parent: tk.Tk):
         self.parent = parent
+        self.visible_widgets: list[tk.Label | tk.Button] = []
 
         self.frame_buttons = tk.Frame(parent, bg=UI_colours.WHITE)  # frame for choosing season
         self.frame_buttons.grid(row=0)
@@ -111,6 +112,15 @@ class GUI():
                 teams.append(data["2024/2025"][team]["team name"])
             self.selected_season = Season("2024/2025", teams)
             file.close()
+
+    def remove_widgets(self):
+        for widget in self.visible_widgets:
+            try:
+                widget.destroy()
+            except Exception as e:
+                print(f"Error destorying widget: {widget}")
+                print(e)
+                self.reset()
 
     def display_season(self, season: str):
         self.button_table = tk.Button(self.frame_buttons, text="Table", command=lambda: self.display_table(self.selected_season))
@@ -174,6 +184,7 @@ class GUI():
                 object.grid(row=i + 1, column=0, pady=5)
             else:
                 object.grid(row=i + 1, column=0, padx=5)
+            self.visible_widgets.append(object)
 
         '''icon_labels: list[tk.Label] = []
 
