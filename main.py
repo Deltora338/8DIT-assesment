@@ -78,59 +78,121 @@ class Season():
 class GUI():
     def __init__(self, parent: tk.Tk):
         self.parent = parent
-        self.visible_widgets: list[tk.Label | tk.Button] = []
 
-        self.frame_buttons = tk.Frame(parent, bg=UI_colours.WHITE)  # frame for choosing season
+        self.second_visible_widgets: list[tk.Label | tk.Button] = []
+        self.primary_widgets: list[tk.Label | tk.Button | tk.Frame] = []
+
+        self.frame_buttons = tk.Frame(self.parent, bg=UI_colours.WHITE)  # frame for choosing season
+        self.primary_widgets.append(self.frame_buttons)
         self.frame_buttons.grid(row=0)
-        self.frame_display = tk.Frame(parent, bg=UI_colours.WHITE)  # frame for table
+        self.frame_display = tk.Frame(self.parent, bg=UI_colours.WHITE)  # frame for table, matches and add match
+        self.primary_widgets.append(self.frame_display)
         self.frame_display.grid(row=1)
 
-        self.season_names = ["2024/2025", "2025/2026", "Custom"]
-        self.season_buttons: list[tk.Button] = []
-
-        for i, buttonName in enumerate(self.season_names):
-            if buttonName != "Custom":
-                b = tk.Button(self.frame_buttons, text=buttonName, command=lambda: self.display_season(buttonName))
-            else:
-                b = tk.Button(self.frame_buttons, text=buttonName, command=lambda: self.createCustomSeason())
-            b.grid(row=0, column=i)
-            self.season_buttons.append(b)
-
-        self.button_2425_season = tk.Button(self.frame_buttons, text="2024/2025", command=lambda: self.display_season("2024/2025"))
-        self.button_2425_season.grid(row=0, column=0)
-        self.button_2526_season = tk.Button(self.frame_buttons, text="2025/2026", command=lambda: self.display_season("2025/2026"))
-        self.button_2526_season.grid(row=0, column=1)
-        self.button_custom_season_create = tk.Button(self.frame_buttons, text="Custom", command=lambda: self.display_season("Custom"))
-        self.button_custom_season_create.grid(row=0, column=2)
-
         self.selected_season: Season
+        self.data_file_name = "data.json"
+        try:  # inside try and exept block to catch common file opening errors
+            with open(self.data_file_name, 'r') as file:
+                try:  # try except inside the open() as well to make sure to .close() the file safely if errors occur
+                    data = json.load(file)
+                    teams: list[str] = []
+                    for team in data["2024/2025"]:
+                        teams.append(data["2024/2025"][team]["team name"])
+                    self.selected_season = Season("2024/2025", teams, isActive=True)
+                    self.display_table(self.selected_season)
 
-        with open("data.json", 'r') as file:
-            data = json.load(file)
-            teams: list[str] = []
-            for team in data["2024/2025"]:
-                teams.append(data["2024/2025"][team]["team name"])
-            self.selected_season = Season("2024/2025", teams)
-            file.close()
+                    self.season_names = [key for key in data]
+                    self.season_buttons: list[tk.Button] = []
 
-    def remove_widgets(self):
-        for widget in self.visible_widgets:
+                    for i, buttonName in enumerate(self.season_names):
+                        if buttonName != "Custom":
+                            b = tk.Button(self.frame_buttons, text=buttonName, command=lambda: self.display_season(buttonName))
+                        else:
+                            b = tk.Button(self.frame_buttons, text=buttonName, command=lambda: self.createCustomSeason())
+                        b.grid(row=0, column=i, padx=5, pady=5)
+                        self.season_buttons.append(b)
+                    file.close()
+                except Exception as e:
+                    file.close()
+                    print(f'Error after initially opening {self.data_file_name}\nExeption: {e}')
+        except Exception as e:
+            print(f"Error in initial open() from {self.data_file_name}\nExeption: {e}")
+            print(f"Make sure you have the file '{self.data_file_name}' in the correct directory")  # most common error
+
+    def reset(self):
+        '''
+        called on start
+        removes all widgets and trys to reset to start by calling .remove_widgets for display widgets
+        and then removes each primary widgets (season buttons, frames etc)
+        Then it tries to replace them and if it cant it exits and throws an error
+        '''
+        self.remove_widgets()
+
+        for widget in self.primary_widgets:
             try:
                 widget.destroy()
+                continue
             except Exception as e:
-                print(f"Error destorying widget: {widget}")
-                print(e)
-                self.reset()
+                print(f'Error destroying {widget} of type {type(widget)}')
+                print(f'Exception: {e}')
+
+        self.frame_buttons = tk.Frame(self.parent, bg=UI_colours.WHITE)  # frame for choosing season
+        self.primary_widgets.append(self.frame_buttons)
+        self.frame_buttons.grid(row=0)
+        self.frame_display = tk.Frame(self.parent, bg=UI_colours.WHITE)  # frame for table, matches and add match
+        self.primary_widgets.append(self.frame_display)
+        self.frame_display.grid(row=1)
+
+        try:  # inside try and exept block to catch common file opening errors
+            with open(self.data_file_name, 'r') as file:
+                try:  # try except inside the open() as well to make sure to .close() the file safely if errors occur
+                    data = json.load(file)
+                    teams: list[str] = []
+                    for team in data["2024/2025"]:
+                        teams.append(data["2024/2025"][team]["team name"])
+                    self.selected_season = Season("2024/2025", teams, isActive=True)
+                    self.display_table(self.selected_season)
+
+                    self.season_names = [key for key in data]
+                    self.season_buttons: list[tk.Button] = []
+
+                    for i, buttonName in enumerate(self.season_names):
+                        if buttonName != "Custom":
+                            b = tk.Button(self.frame_buttons, text=buttonName, command=lambda: self.display_season(buttonName))
+                        else:
+                            b = tk.Button(self.frame_buttons, text=buttonName, command=lambda: self.createCustomSeason())
+                        b.grid(row=0, column=i, padx=5, pady=5)
+                        self.season_buttons.append(b)
+                    file.close()
+                except Exception as e:
+                    file.close()
+                    print(f'Error in .reset() call {self.data_file_name}\nExeption: {e}')
+        except Exception as e:
+            print(f"Callback .reset() in open() from {self.data_file_name}\nExeption: {e}")
+            print(f"Make sure you have the file '{self.data_file_name}' in the correct directory")  # most common error
+
+    def remove_widgets(self) -> None:
+        '''
+        loops through each secondary display widget on screen and destroys it
+        '''
+        if (self.second_visible_widgets):
+            for widget in self.second_visible_widgets:
+                try:
+                    widget.destroy()
+                except Exception as e:
+                    print(f"Error destorying widget: {widget}")
+                    print(e)
+                    self.reset()
 
     def display_season(self, season: str):
         self.button_table = tk.Button(self.frame_buttons, text="Table", command=lambda: self.display_table(self.selected_season))
-        self.button_table.grid(row=1, column=0)
+        self.button_table.grid(row=1, column=0, padx=5, pady=5)
         self.button_matches = tk.Button(self.frame_buttons, text="Matches", command=self.display_matches)
-        self.button_matches.grid(row=1, column=1)
+        self.button_matches.grid(row=1, column=1, padx=5, pady=5)
 
         if (self.selected_season.isActive):
             self.button_add_game = tk.Button(self.frame_buttons, text="Enter result", command=self.add_game)
-            self.button_add_game.grid(row=1, column=2)
+            self.button_add_game.grid(row=1, column=2, padx=5, pady=5)
 
     def display_table(self, season_: Season):
         self.frame_table = tk.Frame(self.frame_display, bg=UI_colours.WHITE)
@@ -150,6 +212,11 @@ class GUI():
         team_col_width = max_team_name_length + 5
 
         labels: list[tk.Label] = []
+
+        table_title_text = f"{season_.name} Table {"(Ongoing)" if (season_.isActive) else "(Complete)"}"
+
+        table_title = tk.Label(self.frame_table, text=table_title_text, font=("Courier New", 12, "bold"))
+        labels.append(table_title)
 
         header_text = ("  Team                             Pts    MP    W    D     L    GD    GF   GA")
 
@@ -184,7 +251,7 @@ class GUI():
                 object.grid(row=i + 1, column=0, pady=5)
             else:
                 object.grid(row=i + 1, column=0, padx=5)
-            self.visible_widgets.append(object)
+            self.second_visible_widgets.append(object)
 
         '''icon_labels: list[tk.Label] = []
 
@@ -210,4 +277,5 @@ if (__name__ == "__main__"):
     root: tk.Tk = tk.Tk()
     root.configure(bg=UI_colours.WHITE)
     window: GUI = GUI(root)
+    # window.reset()
     root.mainloop()
