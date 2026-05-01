@@ -1,4 +1,8 @@
-import json
+'''
+file contains information and code about the teams to make the data.json file
+'''
+
+# import json
 
 stadiums = {
     "Arsenal": "Emirates Stadium",
@@ -91,9 +95,15 @@ for i, team in enumerate(table):
     data2["2024/2025"][i]["ga"] = table[i][7]
 
 
-if __name__ == "__main__":
+'''if __name__ == "__main__":
 
     with open('data.json', 'w') as file:
         json_str = json.dumps(data2, indent=4)
         file.write(json_str)
-        file.close()
+        file.close()'''
+
+'''
+DO NOT run may overwrite data.json
+only restores 2024/2025 season data and I can provide no garuntee that the format that 
+this file uses is still compatible with main functionality
+'''
