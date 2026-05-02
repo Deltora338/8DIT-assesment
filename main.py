@@ -364,6 +364,5 @@ if (__name__ == "__main__"):
     root: tk.Tk = tk.Tk()
     root.configure(bg=UI_colours.WHITE)
     window: GUI = GUI(root)
-    # window.reset()
     root.title("Premier League Application")
     root.mainloop()
