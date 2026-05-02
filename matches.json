@@ -5751,5 +5751,30 @@
             ]
         ]
     },
-    "2025/2026"
+    "2025/2026":{
+        "1": [
+            ["Liverpool",5,["feel free", "to add games","that ive", "left out", "purposefully"]],
+            ["Liverpool", 0, []]
+        ],
+        "2": [
+        [
+        "Liverpool",
+        4,
+        [
+            "Ekitike",
+            "Gakpo",
+            "Chiesa",
+            "Salah"
+        ]
+        ],
+        [
+        "AFC Bournemouth",
+        2,
+        [
+            "Semenyo",
+            "Semenyo"
+        ]
+        ]
+    ]
+    }
 }
