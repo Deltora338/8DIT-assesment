@@ -351,12 +351,7 @@ class GUI():
         self.remove_widgets()
         self.isMatchesDisplayed = True
 
-        
-
     def add_game(self):
-        pass
-
-    def createcustomSeason(self):
         pass
 
 

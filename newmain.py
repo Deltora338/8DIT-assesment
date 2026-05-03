@@ -12,7 +12,7 @@ from UI_colours import LIGHTERGREY
 
 
 class Season():
-    def __init__(self, name: str, filename='new.json'):
+    def __init__(self, name: str, filename: str='new.json'):
         self.filename = filename
         self.name = name
         self.isActive: bool
@@ -48,15 +48,15 @@ class Season():
                 file.close()
                 self.matches_data = data[self.name]
 
-    def table(self):
+    def table(self) -> list[list[str | int | list[str]]]:
         '''
         is used to make the information from a season ready to be turned into tkinter widgets
         returns a formatted list of relevant data and is called every time rather than making a self.table as data might have changed (in active seasons)
         '''
-        table_rows = []
+        table_rows: list[list[str | int | list[str]]] = []
         # for each team in the season, create a list with the wanted information
         for team in self.teams:
-            row = [
+            row: list[str | int | list[str]] = [
                 team,
                 self.teams_info[team]["points"],
                 self.teams_info[team]["matches played"],
@@ -73,28 +73,35 @@ class Season():
         table_rows.reverse()
         return table_rows
 
-    def matches(self):
+    def matches(self) -> list[list[list[str | int | list[str]]]]:
         '''
         takes the self.matches_data and returns a list of X items to be turned into a grid
         '''
-        matches = []
+        matches: list[list[list[str | int | list[str]]]] = []
         MATCHES_PER_SCREEN = 9  # number of things per page
-        screen = []  # variable is used to represent each screen that will be shown when cycling through matches
+        screen: list[list[str | int | list[str]]] = []  # variable is used to represent each screen that will be shown when cycling through matches
 
         for i, match_info in enumerate(self.matches_data.values()):
             if i % MATCHES_PER_SCREEN == 0:  # cut off at designated value
                 matches.append(screen)
                 screen = []  # reset
-            screen.append(match_info)
+            screen.append(match_info)  # idk why pylance doesnt like this
         if screen:  # if number of matches does not divide to the number wanted, simply append whatever is leftover
             matches.append(screen)
         matches.pop(0)  # empty list from 0 division i think
 
         return matches
+    
+    def update_matches(self) -> None:
+        with open('matches.json', 'r') as file:
+            data = json.load(file)
+            file.close()
+            self.matches_data = data[self.name]
+        return
 
 
 class GUI():
-    def __init__(self, parent) -> None:
+    def __init__(self, parent: tk.Tk) -> None:
         self.parent = parent
 
         # top, middle and bottom frames
@@ -296,7 +303,7 @@ class GUI():
                     player_label.grid(row=row_index, column=0, padx=7)
                     row_index += 1
 
-    def add_result(self, season: Season, state: int = 0, ):
+    def add_result(self, season: Season, state: int = 0, ) -> None:
         '''
         option to add a match result and update data. This is only place where files get written to
         '''
@@ -419,8 +426,44 @@ class GUI():
             self.button_finish.grid(row=6+row_index+row_index_2, column=0, columnspan=2)
 
         if state == 5:
-            print(5)
-            # finish by checking all option menus have a name and formate data and write to file
+            for player in self.team_1_scoring_players:
+                if player.get() not in self.team_1_players:
+                    msg.showerror("Invalid Player", f"Please select a player for {self.team1.get()}")
+                    return
+
+            for player in self.team_2_scoring_players:
+                if player.get() not in self.team_2_players:
+                    msg.showerror("Invalid Player", f"Please select a player for {self.team2.get()}")
+                    return
+
+            if self.score1 == 0 and self.score2 == 0:
+                self.new_match: list[list[str | int | list[str]]] = [
+                    [self.team1.get(), 0, []],
+                    [self.team2.get(), 0, []]
+                ]
+            else:
+                self.new_match = [
+                    [self.team1.get(), self.score1, [player.get() for player in self.team_1_scoring_players]],
+                    [self.team2.get(), self.score2, [player.get() for player in self.team_2_scoring_players]]
+                ]
+            
+            with open('matches.json', 'r') as file:
+                data = json.load(file)
+                file.close()
+            
+            new_key = str(len(data[season.name].keys()))
+
+            data[season.name][new_key] = self.new_match
+
+            with open('matches.json', 'w') as file:
+                json_str = json.dumps(data, indent=4)
+                file.write(json_str)
+                file.close()
+            
+            msg.showinfo("Result Added", "The result has been added to the season's matches")
+            self.add_result(season, 0)
+            season.update_matches()
+            return
 
 
 

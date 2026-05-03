@@ -5751,30 +5751,45 @@
             ]
         ]
     },
-    "2025/2026":{
+    "2025/2026": {
         "1": [
-            ["Liverpool",5,["feel free", "to add games","that ive", "left out", "purposefully"]],
-            ["Liverpool", 0, []]
+            [
+                "Liverpool",
+                5,
+                [
+                    "feel free",
+                    "to add games",
+                    "that ive",
+                    "left out",
+                    "purposefully"
+                ]
+            ],
+            [
+                "Liverpool",
+                0,
+                []
+            ]
         ],
         "2": [
-        [
-        "Liverpool",
-        4,
-        [
-            "Ekitike",
-            "Gakpo",
-            "Chiesa",
-            "Salah"
+            [
+                "Arsenal",
+                5,
+                [
+                    "Martin \u00c3\u02dcdegaard",
+                    "Ben White",
+                    "Bukayo Saka",
+                    "Bukayo Saka",
+                    "Riccardo Calafiori"
+                ]
+            ],
+            [
+                "Sunderland",
+                2,
+                [
+                    "Jack Clarke",
+                    "Jobe Bellingham"
+                ]
+            ]
         ]
-        ],
-        [
-        "AFC Bournemouth",
-        2,
-        [
-            "Semenyo",
-            "Semenyo"
-        ]
-        ]
-    ]
     }
 }
