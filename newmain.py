@@ -325,6 +325,7 @@ class GUI():
             # home header above option menu
             self.label_home = tk.Label(self.frame_lower, text="Home Team", bg=LIGHTERGREY)
             self.label_home.grid(row=0, column=0)
+            return
 
         if state == 1:
             # away header above option menu
@@ -341,6 +342,7 @@ class GUI():
 
             self.option_menu_2 = tk.OptionMenu(self.frame_lower, self.team2, *team_list_2, command=lambda selection: self.add_result(season, 2))
             self.option_menu_2.grid(row=1, column=2)
+            return
 
         if state == 2:
             # remove used widgets
@@ -361,21 +363,65 @@ class GUI():
             self.vs.grid(row=1, column=1, padx=10, pady=7)
             self.entry_2 = tk.Entry(self.frame_lower, textvariable=self.team2_score)
             self.entry_2.grid(row=1, column=2, sticky='ew', padx=10)
-            self.next_button = tk.Button(self.frame_lower, text="Next", command=lambda: self.add_result(season, 3), bg=LIGHTGRAY)
+            self.next_button = tk.Button(self.frame_lower, text="Check", command=lambda: self.add_result(season, 3), bg=LIGHTGRAY)
             self.next_button.grid(row=2, column=0, columnspan=2, sticky='nsew', padx=5, pady=5)
+            return
 
         if state == 3:
             try:
                 self.score1 = int(self.entry_1.get())
                 self.score2 = int(self.entry_2.get())
+                self.entry_1.destroy()
+                self.entry_2.destroy()
+                self.vs.destroy()
+                self.next_button.configure(command=lambda: self.add_result(season, 4), text="Continue")
+                self.vs_label.configure(text=f'{self.team1.get()} ({self.score1}) vs ({self.score2}) {self.team2.get()}')
             except Exception:
                 msg.showerror("Invalid Score", "Please enter an integer as a score")
                 return
-            lambda: self.add_result(season, 4)
 
         if state == 4:
-            pass
-            # do a for _ in range goals for each team
+            self.next_button.destroy()
+            self.team_1_players = season.teams_info[self.team1.get()]["players"]
+            self.team_2_players = season.teams_info[self.team2.get()]["players"]
+
+            self.team_1_scoring_players = []
+            self.team_2_scoring_players = []
+
+            row_index = 0
+            if self.score1 != 0:
+                for i in range(self.score1):
+                    row_index += 1
+
+                    player = tk.StringVar()
+                    self.team_1_scoring_players.append(player)
+
+                    self.team1_scorer_label = tk.Label(self.frame_lower, text=f'{self.team1.get()} scorers:')
+                    self.team1_scorer_label.grid(row=3, column=0, padx=5, pady=5)
+
+                    optionmenu = tk.OptionMenu(self.frame_lower, player, *self.team_1_players)
+                    optionmenu.grid(row=i+4, column=0, pady=5)
+
+            row_index_2 = 0
+            if self.score2 != 0:
+                for i in range(self.score2):
+                    row_index_2 += 1
+                    player = tk.StringVar()
+                    self.team_2_scoring_players.append(player)
+
+                    self.team2_scorer_label = tk.Label(self.frame_lower, text=f'{self.team2.get()} scorers:')
+                    self.team2_scorer_label.grid(row=4+row_index, column=0, pady=5, padx=5)
+
+                    optionmenu = tk.OptionMenu(self.frame_lower, player, *self.team_2_players)
+                    optionmenu.grid(row=i+5+row_index, column=0, pady=5)
+
+            self.button_finish = tk.Button(self.frame_lower, text="Finish", command=lambda: self.add_result(season, 5))
+            self.button_finish.grid(row=6+row_index+row_index_2, column=0, columnspan=2)
+
+        if state == 5:
+            print(5)
+            # finish by checking all option menus have a name and formate data and write to file
+
 
 
 if (__name__ == "__main__"):
