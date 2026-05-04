@@ -1,363 +1,512 @@
 import tkinter as tk
 import json
-import UI_colours as UI_colours
+from tkinter import messagebox as msg
+
+from colours_def import *
 
 
 class Season():
-    '''
-    stores information about a season, its name (usually something like 2023/2024) whether or
-    not it is active (can have results added to it), and its teams
-    '''
-    def __init__(self, name: str, teams: list[str] = [], isActive: bool = False):
+    def __init__(self, name: str, filename: str='data.json'):
+        self.filename = filename
         self.name = name
-        self.isActive = isActive
-        self.nteams = len(teams)
-        if (self.nteams % 2 != 0):  # adds a bye option as a team if there is an odd number of teams
-            self.teams = teams
-            self.teams = self.teams.append("bye")
-        else:
-            self.teams = teams
+        self.isActive: bool
+        self.teams: list[str] = []
+        self.nteams: int
+        self.teams_info: dict[str, dict[str, list[str] | str | int]] = {}
+        self.matches_data: dict[str, list[list[str | int | list[str]]]]
 
-    def generate_schedule(self, teams_list: list[str], format: int = 2) -> list[list[tuple[str, str]]]:  # default is double header round robin
-        '''
-        this method returns a schedule of all the matches to be played from a list of teams and
-        a format (number of times each team plays each other)
-        returns a list of rounds, where each round is a list of matches, and each match is a tuple of the two teams playing
-        '''
-        use_team_list: list[str] = teams_list
-        schedule: list[list[tuple[str, str]]] = []
-        round: list[tuple[str, str]] = []
-        for i in range(format):  # allows for single/double/triple round robin formats
-            for _ in range(len(use_team_list) - 1):
-                for j in range(len(use_team_list) // 2):
-                    round.append((use_team_list[j], use_team_list[len(use_team_list) - 1 - j]))
-                schedule.append(round)
-                round = []
-                use_team_list.insert(1, use_team_list.pop())
-            if i % 2 == 0:  # alternates home and away teams for each round robin
-                use_team_list.reverse()
+        if self.name != "custom":  # redundant
+            with open(self.filename, 'r') as file:
 
-        return schedule
+                # get data and simplify to the parts that each instance will need
+                data = json.load(file)
+                file.close()  # close file once data is obtained
+                data = data[self.name]
 
-#                                            name,points,mp,   w,   d,   l,   gd,  gf,  ga
-    def table(self):
-        '''
-        gets data for a season if associated data exists and returns it in
-        a usable form for displaying data
-        '''
-        with open("data.json", 'r') as file:  # json file
-            all_data: dict[str, dict[str, dict[str, int | str | list[str]]]] = json.load(file)
-            try:
-                assert all_data[self.name]
-                data: dict[str, dict[str, int | str | list[str]]] = all_data[self.name]
-            except Exception as e:
-                print(f"Error loading season data {self.name}\nExeption: {e}")
+                if data:
+                    # asign value to isActive
+                    self.isActive = data["isActive"]
+                    self.isActive = False if self.isActive == 0 else True
+
+                    # create list of teams and asign to self.teams
+                    for team in data["teams"]:
+                        self.teams.append(team)
+                    self.nteams = len(self.teams)
+
+                    # copy each team dictionary from data over to self.teams_info
+                    # this includes players, venue, table info and colours
+                    for team_name, team_info in data["teams"].items():
+                        self.teams_info[team_name] = team_info
+
+            # get matches history data
+            with open('matches.json', 'r') as file:
+                data = json.load(file)
                 file.close()
-                print("Error loading data")
-                return
+                self.matches_data = data[self.name]
 
-            table_rows: object = []  # is also annoying to type
+    def table(self) -> list[list[str | int | list[str]]]:
+        '''
+        is used to make the information from a season ready to be turned into tkinter widgets
+        returns a formatted list of relevant data and is called every time rather than making a self.table as data might have changed (in active seasons)
+        '''
+        table_rows: list[list[str | int | list[str]]] = []
+        # for each team in the season, create a list with the wanted information
+        for team in self.teams:
+            row: list[str | int | list[str]] = [
+                team,
+                self.teams_info[team]["points"],
+                self.teams_info[team]["matches played"],
+                self.teams_info[team]["wins"],
+                self.teams_info[team]["draws"],
+                self.teams_info[team]["losses"],
+                self.teams_info[team]["gd"],
+                self.teams_info[team]["gf"],
+                self.teams_info[team]["ga"]]
+            table_rows.append(row)
 
-            for i in range(len(data)):
-                row: object = (  # is annoying to type
-                    data[str(i)]["team name"],
-                    data[str(i)]["points"],
-                    data[str(i)]["matches played"],
-                    data[str(i)]["wins"],
-                    data[str(i)]["draws"],
-                    data[str(i)]["losses"],
-                    data[str(i)]["gd"],
-                    data[str(i)]["gf"],
-                    data[str(i)]["ga"])
-                table_rows.append(row)
+        # sort list by points in case data is not ordered in json file
+        table_rows.sort(key=lambda x: x[1])
+        table_rows.reverse()
+        return table_rows
 
+    def matches(self) -> list[list[list[list[str | int | list[str]]]]]:
+        '''
+        takes the self.matches_data and returns a list of X items to be turned into a grid
+        '''
+        self.update_matches()
+        matches: list[list[list[list[str | int | list[str]]]]] = []
+        MATCHES_PER_SCREEN = 9  # number of things per page
+        screen: list[list[list[str | int | list[str]]]] = []  # variable is used to represent each screen that will be shown when cycling through matches
+
+        for i, match_info in enumerate(self.matches_data.values()):
+            if i % MATCHES_PER_SCREEN == 0:  # cut off at designated value
+                matches.append(screen)
+                screen = []  # reset
+            screen.append(match_info)  # idk why pylance doesnt like this
+        if screen:  # if number of matches does not divide to the number wanted, simply append whatever is leftover
+            matches.append(screen)
+        matches.pop(0)  # empty list from 0 division i think
+
+        return matches
+    
+    # updates self.matches data when new data is added
+    def update_matches(self) -> None:
+        with open('matches.json', 'r') as file:
+            data = json.load(file)
             file.close()
-            return table_rows
+            self.matches_data = data[self.name]
+        return
 
 
 class GUI():
-    def __init__(self, parent: tk.Tk):
+    def __init__(self, parent: tk.Tk) -> None:
         self.parent = parent
 
-        self.second_visible_widgets: list[tk.Label | tk.Button | tk.Frame] = []
-        self.primary_widgets: list[tk.Label | tk.Button | tk.Frame] = []
+        # top, middle and bottom frames
+        self.frame_upper = tk.Frame(parent, bg=LIGHTERGREY)
+        self.frame_upper.grid(row=0, column=0, sticky='nsew')
 
-        self.frame_buttons = tk.Frame(self.parent, bg=UI_colours.WHITE)  # frame for choosing season
-        self.primary_widgets.append(self.frame_buttons)
-        self.frame_buttons.grid(row=0)
-        self.frame_display = tk.Frame(self.parent, bg=UI_colours.WHITE)  # frame for table, matches and add match
-        self.primary_widgets.append(self.frame_display)
-        self.frame_display.grid(row=1)
+        self.frame_middle = tk.Frame(parent, bg=LIGHTERGREY)
+        self.frame_middle.grid(row=1, column=0, sticky='nsew')
+
+        self.frame_lower = tk.Frame(parent, bg=LIGHTERGREY)
+        self.frame_lower.grid(row=2, column=0, sticky='nsew')
 
         self.seasons: list[Season] = []
 
-        self.isTableDisplayed: bool = False
-        self.isMatchesDisplayed: bool = False
+        # create season objects
+        with open('data.json', 'r') as file:
+            data = json.load(file)
+            for season in data:
+                self.seasons.append(Season(season))
+            file.close()
 
-        self.selected_season: Season
-        self.data_file_name = "data.json"
-        try:  # inside try and exept block to catch common file opening errors
-            with open(self.data_file_name, 'r') as file:
-                try:  # try except inside the open() as well to make sure to .close() the file safely if errors occur
-                    data = json.load(file)
-                    teams: list[str] = []
+        self.selected_season = self.seasons[0]
 
-                    for season in data:
-                        teams: list[str] = []
-                        for team in data[season]:
-                            teams.append(data["2024/2025"][team]["team name"])
-                        self.seasons.append(Season(season, teams))
-
-                    self.selected_season = self.seasons[0]
-                    self.display_table(self.selected_season)
-
-                    self._season_names = [key for key in data]
-                    self._season_buttons: list[tk.Button] = []
-
-                    for i, buttonName in enumerate(self._season_names):
-                        if buttonName != "add custom":
-                            if i == 0:
-                                b = tk.Button(self.frame_buttons, text=buttonName, name=buttonName, command=lambda: self.display_season(buttonName), bg=UI_colours.LIGHTBLUE, fg=UI_colours.BLACK)
-                            else:
-                                b = tk.Button(self.frame_buttons, text=buttonName, name=buttonName, command=lambda: self.display_season(buttonName))
-                        else:
-                            b = tk.Button(self.frame_buttons, text=buttonName, name=buttonName, command=lambda: self.createcustomSeason())
-                        b.grid(row=0, column=i, padx=5, pady=5)
-                        self._season_buttons.append(b)
-                        self.primary_widgets.append(b)
-                    file.close()
-                except Exception as e:
-                    file.close()
-                    print(f'Error after initially opening {self.data_file_name}\nExeption: {e}')
-        except Exception as e:
-            print(f"Error in initial open() from {self.data_file_name}\nExeption: {e}")
-            print(f"Make sure you have the file '{self.data_file_name}' in the correct directory")  # most common error
-        
-        for i in range(3):
-            if i == 0:
-                button = tk.Button(self.frame_buttons, text="Table", command=lambda: self.display_table(self.selected_season), bg=UI_colours.OTHERBLUE)
-                button.grid(row=1, column=i, padx=5, pady=5)
-                self.second_visible_widgets.append(button)
-
-            elif i == 1:
-                button = tk.Button(self.frame_buttons, text="Matches", command=lambda: self.display_matches(self.selected_season))
-                button.grid(row=1, column=i, padx=5, pady=5)
-                self.second_visible_widgets.append(button)
+        # create a corresponding button for each season in the data
+        for i, season in enumerate(self.seasons):
+            if season == self.selected_season:
+                button = tk.Button(self.frame_upper, text=season.name, command=lambda s=season: self.update_middle(s), bg=DEFAULT)
+                button.grid(row=0, column=i, pady=5, padx=5)
             else:
-                if self.selected_season.isActive:
-                    button = tk.Button(self.frame_buttons, text="Add result", command=self.add_game)
-                    button.grid(row=1, column=i, padx=5, pady=5)
-                    self.second_visible_widgets.append(button)
+                button = tk.Button(self.frame_upper, text=season.name, command=lambda s=season: self.update_middle(s), bg=DEFAULT)
+                button.grid(row=0, column=i, pady=5, padx=5)
+
+    def update_upper(self):
+        '''
+        destroys and recreates buttons in upper frame
+        is called when update middle is called as update middle is called when a button (in upper) is pressed in order
+        to change the selected button's colour
+        '''
+        # destroy and recreate frame
+        self.frame_upper.destroy()
+        self.frame_upper = tk.Frame(self.parent, bg=LIGHTERGREY)
+        self.frame_upper.grid(row=0, column=0, sticky='nsew')
+
+        # create a button for each season
+        for i, season in enumerate(self.seasons):
+            if season == self.selected_season:
+                button = tk.Button(self.frame_upper, text=season.name, command=lambda s=season: self.update_middle(s), bg=LIGHTBLUE)
+                button.grid(row=0, column=i, pady=5, padx=5)
+            else:
+                button = tk.Button(self.frame_upper, text=season.name, command=lambda s=season: self.update_middle(s), bg=DEFAULT)
+                button.grid(row=0, column=i, pady=5, padx=5)
+
+    def update_middle(self, season: Season):
+        '''
+        updates middle buttons based on which is selected and whether or not the selected season is active
+        called when a season button is hit
+        '''
+        # update selected season
+        self.selected_season = season
+        # clear screen and update
+        self.update_upper()
+        self.reset_lower()
+
+        # destroy and recreate frame
+        self.frame_middle.destroy()
+        self.frame_middle = tk.Frame(self.parent, bg=LIGHTERGREY)
+        self.frame_middle.grid(row=1, column=0, sticky='nsew')
+
+        # create buttons
+        self.button_table = tk.Button(self.frame_middle, text="Table", command=lambda: self.display_table(season), bg=DEFAULT)
+        self.button_table.grid(row=0, column=0, padx=4, pady=5)
+
+        self.button_matches = tk.Button(self.frame_middle, text="Matches", command=lambda: self.display_matches(season), bg=DEFAULT)
+        self.button_matches.grid(row=0, column=1, padx=4, pady=5)
+
+        if season.isActive:
+            self.button_add = tk.Button(self.frame_middle, text="Add result", command=lambda: self.add_result(season), bg=DEFAULT)
+            self.button_add.grid(row=0, column=3, padx=4, pady=5)
+
+    def reset_lower(self):
+        '''
+        removes everything in the lower frame by destorying it before recreating it for new use
+        '''
+        # destroy and recreate frame
+        self.frame_lower.destroy()
+        self.frame_lower = tk.Frame(self.parent, bg=LIGHTERGREY)
+        self.frame_lower.grid(row=2, column=0, sticky='nsew')
+
+    def display_table(self, season: Season):
+        '''
+        is called when table button is clicked
+        takes a season and uses season.table to get table data
+        works by calling Season.table and then adding in a header row, before looping through each row and creating a label
+        '''
+        # first resets the lower frame to clear it
+        self.reset_lower()
+        self.button_table.configure(bg=OTHERBLUE)
+        self.button_matches.configure(bg=DEFAULT)
+        # use try except because the add button does not necesarily exist (season inactive)
+        if season.isActive:
+            self.button_add.configure(bg=DEFAULT)
+
+        # table
+        table_rows = season.table()
+
+        # add header row
+        table_rows.insert(0, ["Team", "Pts", "MP", "W", "D", "L", "GD", "GF", "GA"])
+
+        # loop through each row in descending order, note season.table returns correctly ordered teams
+        for i, row in enumerate(table_rows):
+            for j, info in enumerate(row):
+                if i == 0:  # header is exempt
+                    label = tk.Label(self.frame_lower, text=info, bg=DARKGRAY, fg=WHITE, font=("Courier New", 8))  # type: ignore
+                    label.grid(row=i, column=j, padx=5, pady=5, sticky='w')
+                else:  # regular rows
+                    if j == 0:
+                        label = tk.Label(self.frame_lower, text=f'{i}. {info}', font=("Courier New", 10), bg=LIGHTERGREY)
+                        label.grid(row=i, column=j, padx=5, pady=5, sticky='w')
+                    else:
+                        label = tk.Label(self.frame_lower, text=info, font=("Courier New", 10), bg=LIGHTERGREY)  # type: ignore
+                        label.grid(row=i, column=j, padx=5, pady=5, sticky='w')
+
+    def display_matches(self, season: Season, index: int = 0):
+        '''
+        called when matches button is clicked
+        Creates and displays a grid of matches that has a max width alongside next/previous buttons
+        and a page number
+        Resets screen, then calls season.matches, checks page index and makes the buttons that are always
+        there, then makes n * m grid of frames and puts eachs' information inside of them
+        '''
+        # start by resetting lower and reconfiuring buttons
+        self.reset_lower()
+        self.button_matches.configure(bg=OTHERBLUE)
+        self.button_table.configure(bg=DEFAULT)
+
+        # add matches button will not be present in inactive seasons
+        if season.isActive:
+            self.button_add.configure(bg=DEFAULT)
+
+        # Season class method that returns matches data from the asoc json file
+        matches = season.matches()
+        # because .matches() returns a list of n length lists where each list has 1 screen worth of matches
+        nScreens = len(matches)
+
+        # make sure index is in range
+        if index > nScreens - 1:
+            index = 0
+        if index < 0:
+            index = nScreens - 1
+
+        # create page number label and previous / next buttons
+        self.button_previous = tk.Button(self.frame_lower, text="Previous", command=lambda: self.display_matches(season, index - 1))
+        self.button_previous.grid(row=1, column=0, padx=10, pady=5)
+        self.button_next = tk.Button(self.frame_lower, text="Next", command=lambda: self.display_matches(season, index + 1))
+        self.button_next.grid(row=1, column=4, padx=10, pady=5)
+        self.label_page = tk.Label(self.frame_lower, text=f'Page {index + 1}', bg=LIGHTERGREY)
+        self.label_page.grid(row=0, column=0)
+
+        c = 0  # column index
+        r = 0  # row index
+        GRIDWIDTH = 3  # max number of squares accross
+
+        # create a grid of frames for matches
+        for i, item in enumerate(matches[index]):
+            r += 1
+            # each time the iteration reaches a multiple of GRIDWIDTH it moves to the next column and resets row value
+            if i % GRIDWIDTH == 0:
+                c += 1
+                r = 0
+            # create a new frame for each location in the grid
+            frame = tk.Frame(self.frame_lower, bg=LIGHTGRAY)
+            frame.grid(row=r, column=c, padx=7, pady=7, sticky='nsew')
+
+            # header label
+            vs_label = tk.Label(frame, text=f'{item[0][0]} vs {item[1][0]} at {season.teams_info[item[0][0]]["venue"]}', bg=LIGHTGRAY)  # type: ignore
+            vs_label.grid(row=0, column=0, padx=3, pady=3, columnspan=2)
+
+            # variale to keep track of variable rows
+            row_index = 2
+
+            # team name, score and scoring players beneath
+            team_1_label = tk.Label(frame, text=item[0][0], bg=LIGHTGRAY)  # type: ignore
+            team_1_score_label = tk.Label(frame, text=item[0][1], bg=LIGHTGRAY)  # type: ignore
+            team_1_label.grid(row=1, column=0, sticky='w')
+            team_1_score_label.grid(row=1, column=1, sticky='w')
+
+            # will only run if the team has scored at least one goal
+            if item[0][1] != 0:
+                for player in item[0][2]:  # type: ignore
+                    player_label = tk.Label(frame, text=f'  -{player}', bg=LIGHTGRAY)
+                    player_label.grid(row=row_index, column=0, padx=7)
+                    row_index += 1
+
+            # team 2 info display labels
+            team_2_label = tk.Label(frame, text=item[1][0], bg=LIGHTGRAY)  # type: ignore
+            team_2_score_label = tk.Label(frame, text=item[1][1], bg=LIGHTGRAY)  # type: ignore
+            team_2_label.grid(row=row_index + 1, column=0, sticky='w')
+            team_2_score_label.grid(row=row_index + 1, column=1, sticky='w')
+            row_index += 2
+
+            # will only run if the team has scored at least one goal
+            if item[1][1] != 0:
+                for player in item[1][2]:  # type: ignore
+                    player_label = tk.Label(frame, text=f'  -{player}', bg=LIGHTGRAY)
+                    player_label.grid(row=row_index, column=0, padx=7)
+                    row_index += 1
+
+    def add_result(self, season: Season, state: int = 0, ) -> None:
+        '''
+        option to add a match result and update data. This is only place where files get written to
+        '''
+        # start by clearing any existing widgets if state == 0
+        if state == 0:
+            self.reset_lower()
+            self.button_add.configure(bg=OTHERBLUE)
+            self.button_table.configure(bg=DEFAULT)
+            self.button_matches.configure(bg=DEFAULT)
+
+            # only reset selected teams when all is reset
+            self.team1 = tk.StringVar()
+            self.team1.set("Home Team")
+            self.team2 = tk.StringVar()
+            self.team2.set("Away Team")
+            self.team1_score = tk.Variable()
+            self.team1_score.set(0)  # type: ignore
+            self.team2_score = tk.Variable()
+            self.team2_score.set(0)  # type: ignore
+
+            # option menu 1 vars
+            team_list = season.teams
+            self.option_menu_1 = tk.OptionMenu(self.frame_lower, self.team1, *team_list, command=lambda selection: self.add_result(season, 1))
+            self.option_menu_1.grid(row=1, column=0)
+
+            # home header above option menu
+            self.label_home = tk.Label(self.frame_lower, text="Home Team", bg=LIGHTERGREY)
+            self.label_home.grid(row=0, column=0)
+            return
+
+        if state == 1:
+            # away header above option menu
+            self.label_away = tk.Label(self.frame_lower, text="Away Team", bg=LIGHTERGREY)
+            self.label_away.grid(row=0, column=2)
+
+            # vs label
+            self.vs_label = tk.Label(self.frame_lower, text=" vs ", bg=LIGHTERGREY)
+            self.vs_label.grid(row=1, column=1)
+
+            # option menu 2 vars
+            team_list_2 = season.teams.copy()
+            team_list_2.remove(self.team1.get())
+
+            # away team option menu
+            self.option_menu_2 = tk.OptionMenu(self.frame_lower, self.team2, *team_list_2, command=lambda selection: self.add_result(season, 2))
+            self.option_menu_2.grid(row=1, column=2)
+            return
+
+        if state == 2:
+            # remove used widgets
+            self.option_menu_1.destroy()
+            self.option_menu_2.destroy()
+            self.label_away.destroy()
+            self.label_home.destroy()
+
+            # update to new header
+            self.vs_label.configure(text=f'{self.team1.get()} vs {self.team2.get()}')
+            self.vs_label.grid_forget()
+            self.vs_label.grid(row=0, column=0, padx=7, pady=5, sticky='s')
+
+            # create new widgets
+
+            # team1 score entry
+            self.entry_1 = tk.Entry(self.frame_lower, textvariable=self.team1_score)
+            self.entry_1.grid(row=1, column=0, sticky='ew', padx=10)
+            # label that displays vs
+            self.vs = tk.Label(self.frame_lower, text=" vs ", bg=LIGHTERGREY)
+            self.vs.grid(row=1, column=1, padx=10, pady=7)
+            # team2 score entry
+            self.entry_2 = tk.Entry(self.frame_lower, textvariable=self.team2_score)
+            self.entry_2.grid(row=1, column=2, sticky='ew', padx=10)
+            # check button that makes sure integers are entered
+            self.next_button = tk.Button(self.frame_lower, text="Check", command=lambda: self.add_result(season, 3), bg=LIGHTGRAY)
+            self.next_button.grid(row=2, column=0, columnspan=2, sticky='nsew', padx=5, pady=5)
+            # create cancel button
+            self.cancel_button = tk.Button(self.frame_lower, text="Cancel", command=lambda: self.add_result(season, 0), bg=LIGHTGRAY)
+            self.cancel_button.grid(row=3, column=0, columnspan=2, sticky='nsew', padx=5, pady=5)
+            return
+
+        if state == 3:
+            try:
+                # if either of the int() statements fail that means that a non int-able number has been entered
+                self.score1 = int(self.entry_1.get())
+                self.score2 = int(self.entry_2.get())
+                # if there is no error then continue on
+                self.entry_1.destroy()
+                self.entry_2.destroy()
+                self.vs.destroy()
+                # change check button to continue
+                self.next_button.configure(command=lambda: self.add_result(season, 4), text="Continue")
+                # update x vs y label
+                self.vs_label.configure(text=f'{self.team1.get()} ({self.score1}) vs ({self.score2}) {self.team2.get()}')
+            except Exception:
+                msg.showerror("Invalid Score", "Please enter an integer as a score")
+                return
+
+        if state == 4:
+            # remove next button
+            self.next_button.destroy()
+            # load players
+            self.team_1_players = season.teams_info[self.team1.get()]["players"]
+            self.team_2_players = season.teams_info[self.team2.get()]["players"]
+
+            # list of the scoring players
+            self.team_1_scoring_players: list[tk.StringVar] = []
+            self.team_2_scoring_players: list[tk.StringVar] = []
+
+            row_index = 0 # for keeping track of most recent used row
+            if self.score1 != 0:
+                for i in range(self.score1):
+                    row_index += 1
+
+                    # create a player for each goal
+                    player = tk.StringVar()
+                    # add it to the list of players 
+                    self.team_1_scoring_players.append(player)
+
+                    # label
+                    self.team1_scorer_label = tk.Label(self.frame_lower, text=f'{self.team1.get()} scorers:', bg=DARKGRAY)
+                    self.team1_scorer_label.grid(row=3, column=0, padx=5, pady=5)
+
+                    # create an option menu for each goal
+                    optionmenu = tk.OptionMenu(self.frame_lower, player, *self.team_1_players)  # type: ignore
+                    optionmenu.grid(row=i+4, column=0, pady=5)
+
+            if self.score2 != 0:
+                for i in range(self.score2):
+                    # make player variable for each goal and add to list of players
+                    player = tk.StringVar()
+                    self.team_2_scoring_players.append(player)
+
+                    # label for team 2 scorers
+                    self.team2_scorer_label = tk.Label(self.frame_lower, text=f'{self.team2.get()} scorers:', bg=DARKGRAY)
+                    self.team2_scorer_label.grid(row=3, column=1, pady=5, padx=5)
+
+                    # create an option menu for each goal
+                    optionmenu = tk.OptionMenu(self.frame_lower, player, *self.team_2_players)  # type: ignore
+                    optionmenu.grid(row=i+4, column=1, pady=5)
+
+            # finish button for once all option menus have been filled
+            self.button_finish = tk.Button(self.frame_lower, text="Finish", command=lambda: self.add_result(season, 5))
+            # use row=6 + row_index to ensure it is below all of the option menus
+            self.button_finish.grid(row=6+row_index, column=0, columnspan=2)
+
+            # update position of cancel button so that it remains at the bottem of the screen
+            self.cancel_button.grid(row=7+row_index)
+
+        if state == 5:
+            # check to make sure all players have been selected and that they are valid (in the team)
+            for player in self.team_1_scoring_players:
+                if player.get() not in self.team_1_players:  # type: ignore
+                    msg.showerror("Invalid Player", f"Please select a player for {self.team1.get()}")
+                    return
+
+            # check to make sure all players have been selected and that they are valid (in the team)
+            for player in self.team_2_scoring_players:
+                if player.get() not in self.team_2_players:  # type: ignore
+                    msg.showerror("Invalid Player", f"Please select a player for {self.team2.get()}")
+                    return
+            # if score is 0-0 then make empty
+            if self.score1 == 0 and self.score2 == 0:
+                self.new_match: list[list[str | int | list[str]]] = [
+                    [self.team1.get(), 0, []],
+                    [self.team2.get(), 0, []]
+                ]
+            else:
+                # score is not 0-0 so make new match with scores and players
+                self.new_match = [
+                    [self.team1.get(), self.score1, [player.get() for player in self.team_1_scoring_players]],
+                    [self.team2.get(), self.score2, [player.get() for player in self.team_2_scoring_players]]
+                ]
             
+            # get existing data
+            with open('matches.json', 'r') as file:
+                data = json.load(file)
+                file.close()
+            
+            # find new key value for new match
+            new_key = str(len(data[season.name].keys()) + 1)
 
-    def reset(self):
-        '''
-        called on start
-        removes all widgets and trys to reset to start by calling .remove_widgets for display widgets
-        and then removes each primary widgets (season buttons, frames etc)
-        Then it tries to replace them and if it cant it exits and throws an error
-        '''
-        self.remove_widgets()
-        try:
-            for widget in self.primary_widgets:
-                try:
-                    widget.destroy()
-                    continue
-                except Exception as e:
-                    print(f'Error destroying {widget} of type {type(widget)}')
-                    print(f'Exception: {e}')
+            # update data
+            data[season.name][new_key] = self.new_match
 
-            self.frame_buttons = tk.Frame(self.parent, bg=UI_colours.WHITE)  # frame for choosing season
-            self.primary_widgets.append(self.frame_buttons)
-            self.frame_buttons.grid(row=0)
-            self.frame_display = tk.Frame(self.parent, bg=UI_colours.WHITE)  # frame for table, matches and add match
-            self.primary_widgets.append(self.frame_display)
-            self.frame_display.grid(row=1)
-
-            try:  # inside try and exept block to catch common file opening errors
-                with open(self.data_file_name, 'r') as file:
-                    try:  # try except inside the open() as well to make sure to .close() the file safely if errors occur
-                        data = json.load(file)
-                        teams: list[str] = []
-                        for team in data["2024/2025"]:
-                            teams.append(data["2024/2025"][team]["team name"])
-                        self.selected_season = Season("2024/2025", teams, isActive=True)
-                        self.display_table(self.selected_season)
-
-                        self._season_names = [key for key in data]
-                        self._season_buttons: list[tk.Button] = []
-
-                        for i, buttonName in enumerate(self._season_names):
-                            if buttonName != "add custom":
-                                b = tk.Button(self.frame_buttons, text=buttonName, command=lambda: self.display_season(buttonName))
-                            else:
-                                b = tk.Button(self.frame_buttons, text=buttonName, command=lambda: self.createcustomSeason())
-                            b.grid(row=0, column=i, padx=5, pady=5)
-                            self._season_buttons.append(b)
-                        file.close()
-                    except Exception as e:
-                        file.close()
-                        print(f'Error in .reset() call {self.data_file_name}\nExeption: {e}')
-            except Exception as e:
-                print(f"Callback .reset() in open() from {self.data_file_name}\nExeption: {e}")
-                print(f"Make sure you have the file '{self.data_file_name}' in the correct directory")  # most common error
-        except Exception as e:
-            print('Error resetting, exiting...')
-            print(f'Exception: {e}')
-            root.destroy()
-
-    def remove_widgets(self) -> None:
-        '''
-        loops through each secondary display widget on screen and destroys it
-        '''
-        if (self.second_visible_widgets):
-            for widget in self.second_visible_widgets:
-                try:
-                    widget.destroy()
-                except Exception as e:
-                    print(f"Error destorying widget: {widget}")
-                    print(e)
-                    self.reset()
-        
-        for i in range(3):
-            if i == 0:
-                button = tk.Button(self.frame_buttons, text="Table", command=lambda: self.display_table(self.selected_season), bg=UI_colours.OTHERBLUE)
-                button.grid(row=1, column=i, padx=5, pady=5)
-                self.second_visible_widgets.append(button)
-
-            elif i == 1:
-                button = tk.Button(self.frame_buttons, text="Matches", command=lambda: self.display_matches(self.selected_season))
-                button.grid(row=1, column=i, padx=5, pady=5)
-                self.second_visible_widgets.append(button)
-            else:
-                if self.selected_season.isActive:
-                    button = tk.Button(self.frame_buttons, text="Add result", command=self.add_game)
-                    button.grid(row=1, column=i, padx=5, pady=5)
-                    self.second_visible_widgets.append(button)
-        
-        self.isMatchesDisplayed = self.isTableDisplayed = False
-
-    def display_season(self, _season_: Season):
-        #  self._season_buttons[0].configure(bg="#bfe1f5")
-
-        if (self.selected_season.isActive):
-            self.button_add_game = tk.Button(self.frame_buttons, text="Enter result", command=self.add_game)
-            self.button_add_game.grid(row=1, column=2, padx=5, pady=5)
-
-        self.display_table(_season_)
-
-    def display_table(self, _season_: Season):
-        if self.isTableDisplayed:
-            return
-        '''
-        function called when table button is hit
-        '''
-        self.remove_widgets()  # to remove any existing display widets
-        self.isTableDisplayed = True
-
-        self.frame_table = tk.Frame(self.frame_display, bg=UI_colours.WHITE)  # frame that contains table
-        self.frame_table.grid(row=0, column=1)
-        self.second_visible_widgets.append(self.frame_table)
-
-        self.frame_table_icons = tk.Frame(self.frame_display)  # frame that might house icons
-        self.frame_table_icons.grid(row=0, column=0)
-        self.second_visible_widgets.append(self.frame_table_icons)
-
-        table = _season_.table()
-        try:
-            assert table
-        except Exception as e:
-            print(f"Error loading season table for {_season_.name}\nExeption: {e}")
-            print("Error loading data")
+            # write new data to file
+            with open('matches.json', 'w') as file:
+                json_str = json.dumps(data, indent=4)
+                file.write(json_str)
+                file.close()
+            
+            # confirmation message and update screen
+            msg.showinfo("Result Added", "The result has been added to the season's matches")
+            self.display_matches(season) # go to display matches to show new game
             return
 
-        max_team_name_length = max(len(row[0]) for row in table)
-        team_col_width = max_team_name_length + 5
-
-        labels: list[tk.Label] = []
-
-        table_title_text = f"{_season_.name} Table {"(Season Ongoing)" if (_season_.isActive) else "(Season Complete)"}"
-
-        table_title = tk.Label(self.frame_table, text=table_title_text, font=("Courier New", 12, "bold"))
-        labels.append(table_title)
-
-        header_text = ("  Team                             Pts    MP    W    D     L    GD    GF   GA")
-
-        header_label = tk.Label(self.frame_table,
-                                text=header_text,
-                                justify=tk.LEFT,
-                                font=("Courier New", 8),
-                                bg=UI_colours.DARKGRAY,
-                                fg=UI_colours.WHITE,)
-
-        labels.append(header_label)
-
-        for i, row in enumerate(table):
-            team_name = f'{i + 1}. {row[0]:10}'
-            row_text = (
-                f'{team_name:<{team_col_width}} '
-                f'{row[1]:>4} {row[2]:>4} {row[3]:>4} {row[4]:>4} '
-                f'{row[5]:>4} {row[6]:>4} {row[7]:>4} {row[8]:>4}'
-            )
-            label = tk.Label(
-                self.frame_table,
-                text=row_text,
-                justify=tk.LEFT,
-                font=("Courier New", 10),
-                bg=UI_colours.WHITE,
-                fg=UI_colours.BLACK
-            )
-            labels.append(label)
-
-        for i, object in enumerate(labels):
-            if i == 0:
-                object.grid(row=i + 1, column=0, pady=5)
-            else:
-                object.grid(row=i + 1, column=0, padx=5)
-            self.second_visible_widgets.append(object)
-
-        '''icon_labels: list[tk.Label] = []
-
-        for i, row in enumerate(table):
-            icon_image = tk.PhotoImage(file='Team Icon/row[0]')
-            image_label = tk.Label(self.frame_table_icons, image=icon_image)
-            icon_labels.append(image_label)
-
-        for i, label in enumerate(icon_labels):
-            label.grid(row=i + 1, column=0)'''
-
-    def display_matches(self, _season_: Season):
-        '''
-        method that is called when matches button is hit
-        '''
-        if self.isMatchesDisplayed:
-            return
-        
-        filename = 'matches.json'
-        try:
-            with open(filename, 'r') as matches_file:
-                data = json.load(matches_file)
-                try:
-                    matches = data[_season_.name]
-                except Exception as e:
-                    print(f'Error accessing matches info for season: {_season_.name} (opened {filename} successfully)')
-                    print(f'Exception: {e}')
-        except Exception as e:
-            print(f'Error loading matches from file {filename}')
-            print(f'Exception: {e}')
-
-
-
-        self.remove_widgets()
-        self.isMatchesDisplayed = True
-
-    def add_game(self):
-        pass
 
 
 if (__name__ == "__main__"):
     root: tk.Tk = tk.Tk()
-    root.configure(bg=UI_colours.WHITE)
+    root.configure(bg=WHITE)
     window: GUI = GUI(root)
     root.title("Premier League Application")
     root.mainloop()
