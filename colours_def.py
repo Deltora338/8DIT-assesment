@@ -1,5 +1,5 @@
 '''
-file with colours for UI, is imported into main.py and used there
+File with colours for UI, is imported into main.py and used there
 '''
 
 LIGHTGRAY = "#A2A2A9"

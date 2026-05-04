@@ -1,3 +1,5 @@
+"""Main file containing logic and GUI elements."""
+
 import tkinter as tk
 import json
 from tkinter import messagebox as msg
@@ -6,7 +8,17 @@ from colours_def import *
 
 
 class Season():
-    def __init__(self, name: str, filename: str='data.json'):
+    """Represents a football season.
+
+    contains all the information that is used for each season per season
+    """
+
+    def __init__(self, name: str, filename: str = 'data.json'):
+        """Constructor function.
+
+        takes in only the name of the season and then trys to get relevant data with open() statements
+        if data exists it can be split up formatted and asigned
+        """
         self.filename = filename
         self.name = name
         self.isActive: bool
@@ -45,10 +57,11 @@ class Season():
                 self.matches_data = data[self.name]
 
     def table(self) -> list[list[str | int | list[str]]]:
-        '''
+        """Return table data in usable form.
+
         is used to make the information from a season ready to be turned into tkinter widgets
         returns a formatted list of relevant data and is called every time rather than making a self.table as data might have changed (in active seasons)
-        '''
+        """
         table_rows: list[list[str | int | list[str]]] = []
         # for each team in the season, create a list with the wanted information
         for team in self.teams:
@@ -70,9 +83,10 @@ class Season():
         return table_rows
 
     def matches(self) -> list[list[list[list[str | int | list[str]]]]]:
-        '''
-        takes the self.matches_data and returns a list of X items to be turned into a grid
-        '''
+        """Return formatted matches.
+
+        takes the self.matches_data and returns a list of lists of X items to be turned into a grid
+        """
         self.update_matches()
         matches: list[list[list[list[str | int | list[str]]]]] = []
         MATCHES_PER_SCREEN = 9  # number of things per page
@@ -88,9 +102,13 @@ class Season():
         matches.pop(0)  # empty list from 0 division i think
 
         return matches
-    
+
     # updates self.matches data when new data is added
     def update_matches(self) -> None:
+        """Update self.matches and return.
+
+        open matches data and update to whatever is there
+        """
         with open('matches.json', 'r') as file:
             data = json.load(file)
             file.close()
@@ -99,7 +117,16 @@ class Season():
 
 
 class GUI():
+    """Tkinter GUI class.
+
+    class containing all visual and logical functionality
+    """
+
     def __init__(self, parent: tk.Tk) -> None:
+        """Constructor func.
+
+        builds initial widgets, gets data and creates asociated seasons
+        """
         self.parent = parent
 
         # top, middle and bottom frames
@@ -133,11 +160,11 @@ class GUI():
                 button.grid(row=0, column=i, pady=5, padx=5)
 
     def update_upper(self):
-        '''
-        destroys and recreates buttons in upper frame
+        """Destorys and resets button in upper frame.
+
         is called when update middle is called as update middle is called when a button (in upper) is pressed in order
         to change the selected button's colour
-        '''
+        """
         # destroy and recreate frame
         self.frame_upper.destroy()
         self.frame_upper = tk.Frame(self.parent, bg=LIGHTERGREY)
@@ -153,10 +180,11 @@ class GUI():
                 button.grid(row=0, column=i, pady=5, padx=5)
 
     def update_middle(self, season: Season):
-        '''
+        """Update middle frame.
+
         updates middle buttons based on which is selected and whether or not the selected season is active
         called when a season button is hit
-        '''
+        """
         # update selected season
         self.selected_season = season
         # clear screen and update
@@ -180,20 +208,22 @@ class GUI():
             self.button_add.grid(row=0, column=3, padx=4, pady=5)
 
     def reset_lower(self):
-        '''
+        """Destroys lower frame.
+
         removes everything in the lower frame by destorying it before recreating it for new use
-        '''
+        """
         # destroy and recreate frame
         self.frame_lower.destroy()
         self.frame_lower = tk.Frame(self.parent, bg=LIGHTERGREY)
         self.frame_lower.grid(row=2, column=0, sticky='nsew')
 
     def display_table(self, season: Season):
-        '''
+        """Displays table for selected season.
+
         is called when table button is clicked
         takes a season and uses season.table to get table data
         works by calling Season.table and then adding in a header row, before looping through each row and creating a label
-        '''
+        """
         # first resets the lower frame to clear it
         self.reset_lower()
         self.button_table.configure(bg=OTHERBLUE)
@@ -223,13 +253,14 @@ class GUI():
                         label.grid(row=i, column=j, padx=5, pady=5, sticky='w')
 
     def display_matches(self, season: Season, index: int = 0):
-        '''
+        """Displays played matches.
+
         called when matches button is clicked
         Creates and displays a grid of matches that has a max width alongside next/previous buttons
         and a page number
         Resets screen, then calls season.matches, checks page index and makes the buttons that are always
         there, then makes n * m grid of frames and puts eachs' information inside of them
-        '''
+        """
         # start by resetting lower and reconfiuring buttons
         self.reset_lower()
         self.button_matches.configure(bg=OTHERBLUE)
@@ -308,9 +339,9 @@ class GUI():
                     row_index += 1
 
     def add_result(self, season: Season, state: int = 0, ) -> None:
-        '''
+        """
         option to add a match result and update data. This is only place where files get written to
-        '''
+        """
         # start by clearing any existing widgets if state == 0
         if state == 0:
             self.reset_lower()
