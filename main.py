@@ -26,34 +26,57 @@ class Season():
         self.teams_info: dict[str, dict[str, list[str] | str | int]] = {}
         self.matches_data: dict[str, list[list[str | int | list[str]]]]
 
-        if self.name != "custom":  # redundant
-            with open(self.filename, 'r') as file:
+        with open(self.filename, 'r') as file:
 
-                # get data and simplify to the parts that each instance will need
-                data = json.load(file)
-                file.close()  # close file once data is obtained
-                data = data[self.name]
+            # get data and simplify to the parts that each instance will need
+            data = json.load(file)
+            file.close()  # close file once data is obtained
+            data = data[self.name]
 
-                if data:
-                    # asign value to isActive
-                    self.isActive = data["isActive"]
-                    self.isActive = False if self.isActive == 0 else True
+            if data:
+                # asign value to isActive
+                self.isActive = data["isActive"]
+                self.isActive = False if self.isActive == 0 else True
 
-                    # create list of teams and asign to self.teams
-                    for team in data["teams"]:
-                        self.teams.append(team)
-                    self.nteams = len(self.teams)
+                # create list of teams and asign to self.teams
+                for team in data["teams"]:
+                    self.teams.append(team)
+                self.nteams = len(self.teams)
 
-                    # copy each team dictionary from data over to self.teams_info
-                    # this includes players, venue, table info and colours
-                    for team_name, team_info in data["teams"].items():
-                        self.teams_info[team_name] = team_info
+                # copy each team dictionary from data over to self.teams_info
+                # this includes players, venue, table info and colours
+                for team_name, team_info in data["teams"].items():
+                    self.teams_info[team_name] = team_info
 
             # get matches history data
             with open('matches.json', 'r') as file:
                 data = json.load(file)
                 file.close()
                 self.matches_data = data[self.name]
+
+    def update_teams(self) -> None:
+        with open(self.filename, 'r') as file:
+            self.teams = []
+            self.teams_info = {}
+
+            # get data and simplify to the parts that each instance will need
+            data = json.load(file)
+            file.close()  # close file once data is obtained
+            data = data[self.name]
+
+            if data:
+                # asign value to isActive
+                self.isActive = data["isActive"]
+                self.isActive = False if self.isActive == 0 else True
+
+                # create list of teams and asign to self.teams
+                for team in data["teams"]:
+                    self.teams.append(team)
+
+                # copy each team dictionary from data over to self.teams_info
+                # this includes players, venue, table info and colours
+                for team_name, team_info in data["teams"].items():
+                    self.teams_info[team_name] = team_info
 
     def table(self) -> list[list[str | int | list[str]]]:
         """Return table data in usable form.
@@ -519,21 +542,65 @@ class GUI():
                 data = json.load(file)
                 file.close()
 
-            # find new key value for new match
-            new_key = str(len(data[season.name].keys()) + 1)
+                # find new key value for new match
+                new_key = str(len(data[season.name].keys()) + 1)
 
-            # update data
-            data[season.name][new_key] = self.new_match
+                # update data
+                data[season.name][new_key] = self.new_match
 
-            # write new data to file
             with open('matches.json', 'w') as file:
+                # write new data to file
+                json_str = json.dumps(data, indent=4)
+                file.write(json_str)
+                file.close()
+
+            # open data.json and add new data
+            with open('data.json', 'r') as file:
+                data = json.load(file)
+                file.close()
+                # add match to matches played
+                data[season.name]["teams"][self.team1.get()]["matches played"] += 1
+                data[season.name]["teams"][self.team2.get()]["matches played"] += 1
+
+                # add goals for and against
+                data[season.name]["teams"][self.team1.get()]["gf"] += int(self.score1)
+                data[season.name]["teams"][self.team2.get()]["gf"] += int(self.score2)
+                data[season.name]["teams"][self.team1.get()]["ga"] += int(self.score2)
+                data[season.name]["teams"][self.team2.get()]["ga"] += int(self.score1)
+
+                # calculate new gd by subtracting gf - ga
+                data[season.name]["teams"][self.team1.get()]["gd"] = data[season.name]["teams"][self.team1.get()]["gf"] - data[season.name]["teams"][self.team1.get()]["ga"]
+                data[season.name]["teams"][self.team2.get()]["gd"] = data[season.name]["teams"][self.team2.get()]["gf"] - data[season.name]["teams"][self.team2.get()]["ga"]
+
+                if self.score1 == self.score2:
+                    # add to draw counter if result was a draw
+                    data[season.name]["teams"][self.team1.get()]["draws"] += 1
+                    data[season.name]["teams"][self.team2.get()]["draws"] += 1
+                    # add points
+                    data[season.name]["teams"][self.team1.get()]["points"] += 1
+                    data[season.name]["teams"][self.team2.get()]["points"] += 1
+                elif self.score1 > self.score2:
+                    # add wins/losses to counters
+                    data[season.name]["teams"][self.team1.get()]["wins"] += 1
+                    data[season.name]["teams"][self.team2.get()]["losses"] += 1
+                    # add points
+                    data[season.name]["teams"][self.team1.get()]["points"] += 3
+                else:
+                    # add wins/losses to counters
+                    data[season.name]["teams"][self.team2.get()]["wins"] += 1
+                    data[season.name]["teams"][self.team1.get()]["losses"] += 1
+                    # add points
+                    data[season.name]["teams"][self.team2.get()]["points"] += 3
+
+            with open("data.json", 'w') as file:
                 json_str = json.dumps(data, indent=4)
                 file.write(json_str)
                 file.close()
 
             # confirmation message and update screen
             msg.showinfo("Result Added", "The result has been added to the season's matches")
-            self.display_matches(season)  # go to display matches to show new game
+            season.update_teams()
+            self.add_result(season)  # reset add game
             return
 
 

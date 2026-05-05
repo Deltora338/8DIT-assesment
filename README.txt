@@ -1,7 +1,9 @@
 feel free to add games to 2025/2026 since only the first is filled
 
-some data was created useing google gemini
+some data was created using google gemini
 because of this some (or all) of the special characters in player's names are incorrect
+
+as per school agreement, no code was written with ai, the help of ai or ai as a debug tool
 
 # noqa
 ^ makes ruff extension ignore errors
