@@ -597,10 +597,13 @@ class GUI():
                 file.write(json_str)
                 file.close()
 
-            # confirmation message and update screen
-            msg.showinfo("Result Added", "The result has been added to the season's matches")
+            # update teams info in relevant season to contain new data
             season.update_teams()
             self.add_result(season)  # reset add game
+
+            # confirmation message and update screen
+            msg.showinfo("Result Added", "The result has been added to the season's matches")
+
             return
 
 
