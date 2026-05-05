@@ -3,7 +3,6 @@
 import tkinter as tk
 import json
 from tkinter import messagebox as msg
-
 from colours_def import *
 
 
@@ -78,7 +77,8 @@ class Season():
             table_rows.append(row)
 
         # sort list by points in case data is not ordered in json file
-        table_rows.sort(key=lambda x: x[1])
+        # sort by points, then mp, w, d, l, gd, gf, ga
+        table_rows.sort(key=lambda x: (x[1], x[2], x[3], x[4], x[5], x[6], x[8], x[7]))  # type: ignore
         table_rows.reverse()
         return table_rows
 
@@ -99,7 +99,10 @@ class Season():
             screen.append(match_info)  # idk why pylance doesnt like this
         if screen:  # if number of matches does not divide to the number wanted, simply append whatever is leftover
             matches.append(screen)
-        matches.pop(0)  # empty list from 0 division i think
+        try:
+            matches.pop(0)  # empty list from 0 division i think
+        except Exception:
+            pass
 
         return matches
 
@@ -446,14 +449,14 @@ class GUI():
             self.team_1_scoring_players: list[tk.StringVar] = []
             self.team_2_scoring_players: list[tk.StringVar] = []
 
-            row_index = 0 # for keeping track of most recent used row
+            row_index = 0  # for keeping track of most recent used row
             if self.score1 != 0:
                 for i in range(self.score1):
                     row_index += 1
 
                     # create a player for each goal
                     player = tk.StringVar()
-                    # add it to the list of players 
+                    # add it to the list of players
                     self.team_1_scoring_players.append(player)
 
                     # label
@@ -510,12 +513,12 @@ class GUI():
                     [self.team1.get(), self.score1, [player.get() for player in self.team_1_scoring_players]],
                     [self.team2.get(), self.score2, [player.get() for player in self.team_2_scoring_players]]
                 ]
-            
+
             # get existing data
             with open('matches.json', 'r') as file:
                 data = json.load(file)
                 file.close()
-            
+
             # find new key value for new match
             new_key = str(len(data[season.name].keys()) + 1)
 
@@ -527,12 +530,11 @@ class GUI():
                 json_str = json.dumps(data, indent=4)
                 file.write(json_str)
                 file.close()
-            
+
             # confirmation message and update screen
             msg.showinfo("Result Added", "The result has been added to the season's matches")
-            self.display_matches(season) # go to display matches to show new game
+            self.display_matches(season)  # go to display matches to show new game
             return
-
 
 
 if (__name__ == "__main__"):

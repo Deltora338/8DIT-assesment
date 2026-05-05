@@ -5751,63 +5751,20 @@
             ]
         ]
     },
-    "2025/2026": {
+    "2025/2026 custom": {
         "1": [
             [
                 "Liverpool",
-                5,
+                4,
                 [
-                    "feel free",
-                    "to add games"
+                    "Mohamed Salah",
+                    "Darwin Nunez",
+                    "Dominik Szoboszlai",
+                    "Dominik Szoboszlai"
                 ]
             ],
             [
-                "Liverpool",
-                0,
-                []
-            ]
-        ],
-        "2": [
-            [
-                "Arsenal",
-                0,
-                []
-            ],
-            [
-                "Brentford",
-                0,
-                []
-            ]
-        ],
-        "3": [
-            [
-                "West Ham United",
-                2,
-                [
-                    "Niclas F\u00c3\u00bcllkrug",
-                    "Tomas Soucek"
-                ]
-            ],
-            [
-                "Leeds United",
-                3,
-                [
-                    "Pascal Struijk",
-                    "Brenden Aaronson",
-                    "Junior Firpo"
-                ]
-            ]
-        ],
-        "4": [
-            [
-                "Brighton & Hove Albion",
-                1,
-                [
-                    "Kaoru Mitoma"
-                ]
-            ],
-            [
-                "Chelsea",
+                "Manchester City",
                 0,
                 []
             ]
