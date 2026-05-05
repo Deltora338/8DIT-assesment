@@ -465,9 +465,15 @@ class GUI():
 
         if state == 3:
             try:
-                # if either of the int() statements fail that means that a non int-able number has been entered
+                # if either of the int() statements fail that means that a non int-able number has been entered and the error will be raised
                 self.score1 = int(self.entry_1.get())
                 self.score2 = int(self.entry_2.get())
+
+                # if int() succeeds, check for within bounds
+                if self.score1 < 0 or self.score2 < 0 or self.score1 > 12 or self.score2 > 12:
+                    msg.showerror("Negative score", "Please enter a positive score from 0 to 12")
+                    return
+
                 # if there is no error then continue on
                 self.entry_1.destroy()
                 self.entry_2.destroy()
@@ -476,8 +482,8 @@ class GUI():
                 self.next_button.configure(command=lambda: self.add_result(season, 4), text="Continue")
                 # update x vs y label
                 self.vs_label.configure(text=f'{self.team1.get()} ({self.score1}) vs ({self.score2}) {self.team2.get()}')
-            except Exception:
-                msg.showerror("Invalid Score", "Please enter an integer as a score")
+            except Exception as e:
+                msg.showerror("Invalid Score", f"Please enter an integer as a score \n({e})")
                 return
 
         if state == 4:
