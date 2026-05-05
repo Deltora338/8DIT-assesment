@@ -407,6 +407,14 @@ class GUI():
             return
 
         if state == 1:
+            # destroy widgets if they are already there
+            try:
+                self.label_away.destroy()
+                self.vs_label.destroy()
+                self.option_menu_2.destroy()
+            except Exception:
+                pass
+
             # away header above option menu
             self.label_away = tk.Label(self.frame_lower, text="Away Team", bg=LIGHTERGREY)
             self.label_away.grid(row=0, column=2)
