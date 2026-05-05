@@ -3,7 +3,14 @@
 import tkinter as tk
 import json
 from tkinter import messagebox as msg
-from colours_def import *
+
+from colours_def import DARKGRAY
+from colours_def import LIGHTBLUE
+from colours_def import LIGHTERGREY
+from colours_def import LIGHTGRAY
+from colours_def import DEFAULT
+from colours_def import OTHERBLUE
+from colours_def import WHITE
 
 
 class Season():
@@ -55,6 +62,10 @@ class Season():
                 self.matches_data = data[self.name]
 
     def update_teams(self) -> None:
+        """Update self.teams_info
+
+        same logic as in constructor function
+        """
         with open(self.filename, 'r') as file:
             self.teams = []
             self.teams_info = {}
@@ -112,11 +123,11 @@ class Season():
         """
         self.update_matches()
         matches: list[list[list[list[str | int | list[str]]]]] = []
-        MATCHES_PER_SCREEN = 9  # number of things per page
+        matches_per_screen = 9  # number of things per page
         screen: list[list[list[str | int | list[str]]]] = []  # variable is used to represent each screen that will be shown when cycling through matches
 
         for i, match_info in enumerate(self.matches_data.values()):
-            if i % MATCHES_PER_SCREEN == 0:  # cut off at designated value
+            if i % matches_per_screen == 0:  # cut off at designated value
                 matches.append(screen)
                 screen = []  # reset
             screen.append(match_info)  # idk why pylance doesnt like this
@@ -299,13 +310,13 @@ class GUI():
         # Season class method that returns matches data from the asoc json file
         matches = season.matches()
         # because .matches() returns a list of n length lists where each list has 1 screen worth of matches
-        nScreens = len(matches)
+        nscreens = len(matches)
 
         # make sure index is in range
-        if index > nScreens - 1:
+        if index > nscreens - 1:
             index = 0
         if index < 0:
-            index = nScreens - 1
+            index = nscreens - 1
 
         # create page number label and previous / next buttons
         self.button_previous = tk.Button(self.frame_lower, text="Previous", command=lambda: self.display_matches(season, index - 1))
